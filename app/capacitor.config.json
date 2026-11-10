@@ -1,6 +1,0 @@
-{
-  "appId": "games.qiuqiu.planet",
-  "appName": "球球星球",
-  "webDir": "dist",
-  "server": { "androidScheme": "http" }
-}

@@ -1,6 +1,16 @@
-import { createServer, type IncomingMessage, type ServerResponse } from "node:http";
+import {
+  createServer,
+  type IncomingMessage,
+  type ServerResponse,
+} from "node:http";
 import { randomBytes, randomUUID, scrypt, timingSafeEqual } from "node:crypto";
-import { existsSync, mkdirSync, readFileSync, renameSync, writeFileSync } from "node:fs";
+import {
+  existsSync,
+  mkdirSync,
+  readFileSync,
+  renameSync,
+  writeFileSync,
+} from "node:fs";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { WebSocketServer, WebSocket } from "ws";
@@ -9,7 +19,12 @@ import { promisify } from "node:util";
 import { Game, type Side } from "./game.js";
 
 const derive = promisify(scrypt);
-type UserRecord = { id: string; username: string; salt: string; passwordHash: string };
+type UserRecord = {
+  id: string;
+  username: string;
+  salt: string;
+  passwordHash: string;
+};
 type Session = { userId: string; username: string; expiresAt: number };
 type Room = {
   code: string;
@@ -23,12 +38,16 @@ type JsonRecord = Record<string, unknown>;
 const tickMs = 50;
 const port = Number(process.env.PORT ?? 8787);
 const here = dirname(fileURLToPath(import.meta.url));
-const dataFile = process.env.ACCOUNTS_FILE ?? resolve(here, "../data/accounts.json");
+const dataFile =
+  process.env.ACCOUNTS_FILE ?? resolve(here, "../data/accounts.json");
 
 const users = loadUsers();
 const sessions = new Map<string, Session>();
 const rooms = new Map<string, Room>();
-const tickets = new Map<string, { room: Room; side: Side; expiresAt: number }>();
+const tickets = new Map<
+  string,
+  { room: Room; side: Side; expiresAt: number }
+>();
 const webSockets = new WebSocketServer({ noServer: true, maxPayload: 1024 });
 
 function loadUsers(): UserRecord[] {
@@ -42,7 +61,11 @@ function saveUsers(records: UserRecord[]): void {
   renameSync(dataFile + ".tmp", dataFile);
 }
 
-function sendJson(response: ServerResponse, status: number, body: JsonRecord): void {
+function sendJson(
+  response: ServerResponse,
+  status: number,
+  body: JsonRecord,
+): void {
   response.writeHead(status, {
     "Content-Type": "application/json; charset=utf-8",
     "Access-Control-Allow-Origin": "*",
@@ -86,7 +109,11 @@ function authenticatedUser(request: IncomingMessage): Session | null {
 
 function newToken(user: UserRecord): string {
   const token = randomBytes(32).toString("hex");
-  sessions.set(token, { userId: user.id, username: user.username, expiresAt: Date.now() + 1000 * 60 * 60 * 24 * 7 });
+  sessions.set(token, {
+    userId: user.id,
+    username: user.username,
+    expiresAt: Date.now() + 1000 * 60 * 60 * 24 * 7,
+  });
   return token;
 }
 
@@ -94,13 +121,22 @@ async function passwordHash(password: string, salt: string): Promise<string> {
   return ((await derive(password, salt, 64)) as Buffer).toString("hex");
 }
 
-function validCredentials(username: unknown, password: unknown): username is string {
-  return typeof username === "string" && /^[a-zA-Z0-9_\u4e00-\u9fff]{3,24}$/.test(username.trim()) && typeof password === "string" && password.length >= 6;
+function validCredentials(
+  username: unknown,
+  password: unknown,
+): username is string {
+  return (
+    typeof username === "string" &&
+    /^[a-zA-Z0-9_\u4e00-\u9fff]{3,24}$/.test(username.trim()) &&
+    typeof password === "string" &&
+    password.length >= 6
+  );
 }
 
 function createRoom(): Room {
   let code = "";
-  while (!code || rooms.has(code)) code = randomBytes(4).toString("hex").slice(0, 6).toUpperCase();
+  while (!code || rooms.has(code))
+    code = randomBytes(4).toString("hex").slice(0, 6).toUpperCase();
   const room: Room = {
     code,
     players: { left: null, right: null },
@@ -130,15 +166,41 @@ function handleSocket(room: Room, socket: WebSocket, playerId: Side): void {
   }
   room.game.inputs[playerId] = { x: 0, y: 0 };
   room.sockets.set(socket, playerId);
+  let lastSignal = 0;
   sendSocket(socket, { type: "welcome", roomCode: room.code, playerId });
   socket.on("error", () => socket.terminate());
-  socket.on("message", raw => {
+  socket.on("message", (raw) => {
     if (!room.sockets.has(socket) || room.sockets.size !== 2) return;
     try {
       const msg = JSON.parse(raw.toString()) as JsonRecord;
-      if (msg.type === "input" && typeof msg.x === "number" && typeof msg.y === "number"
-          && Number.isFinite(msg.x) && Number.isFinite(msg.y)) {
-        room.game.inputs[playerId] = { x: Math.max(-1, Math.min(1, msg.x)), y: Math.max(-1, Math.min(1, msg.y)) };
+      if (
+        msg.type === "input" &&
+        typeof msg.x === "number" &&
+        typeof msg.y === "number" &&
+        Number.isFinite(msg.x) &&
+        Number.isFinite(msg.y)
+      ) {
+        room.game.inputs[playerId] = {
+          x: Math.max(-1, Math.min(1, msg.x)),
+          y: Math.max(-1, Math.min(1, msg.y)),
+        };
+      } else if (
+        msg.type === "signal" &&
+        !room.game.finished &&
+        msg.stage === room.game.stage &&
+        typeof msg.rune === "number" &&
+        [0, 1, 2].includes(msg.rune) &&
+        Date.now() - lastSignal >= 300
+      ) {
+        lastSignal = Date.now();
+        for (const [peer, side] of room.sockets) {
+          if (side !== playerId)
+            sendSocket(peer, {
+              type: "signal",
+              rune: msg.rune,
+              stage: room.game.stage,
+            });
+        }
       } else if (msg.type === "resonate" && msg.stage === room.game.stage) {
         room.game.resonate(playerId, performance.now());
       } else if (msg.type === "reset" && room.game.finished) {
@@ -161,8 +223,14 @@ function closeRoom(room: Room) {
   room.sockets.clear();
 }
 
-async function handleHttp(request: IncomingMessage, response: ServerResponse): Promise<void> {
-  const requestUrl = new URL(request.url ?? "/", `http://${request.headers.host ?? "localhost"}`);
+async function handleHttp(
+  request: IncomingMessage,
+  response: ServerResponse,
+): Promise<void> {
+  const requestUrl = new URL(
+    request.url ?? "/",
+    `http://${request.headers.host ?? "localhost"}`,
+  );
   if (request.method === "OPTIONS") {
     sendJson(response, 204, {});
     return;
@@ -171,21 +239,40 @@ async function handleHttp(request: IncomingMessage, response: ServerResponse): P
     sendJson(response, 200, { ok: true, rooms: rooms.size });
     return;
   }
-  if (request.method === "POST" && requestUrl.pathname === "/api/auth/register") {
+  if (
+    request.method === "POST" &&
+    requestUrl.pathname === "/api/auth/register"
+  ) {
     const body = await parseJsonBody(request);
-    const username = typeof body.username === "string" ? body.username.trim() : "";
+    const username =
+      typeof body.username === "string" ? body.username.trim() : "";
     const password = typeof body.password === "string" ? body.password : "";
     if (!validCredentials(username, password)) {
-      sendJson(response, 400, { error: "用户名需为 3–24 个字母、数字、下划线或中文，密码至少 6 位" });
+      sendJson(response, 400, {
+        error: "用户名需为 3–24 个字母、数字、下划线或中文，密码至少 6 位",
+      });
       return;
     }
-    if (users.some((user) => user.username.toLowerCase() === username.toLowerCase())) {
+    if (
+      users.some(
+        (user) => user.username.toLowerCase() === username.toLowerCase(),
+      )
+    ) {
       sendJson(response, 409, { error: "用户名已存在" });
       return;
     }
     const salt = randomBytes(16).toString("hex");
-    const user: UserRecord = { id: randomUUID(), username, salt, passwordHash: await passwordHash(password, salt) };
-    if (users.some(record => record.username.toLowerCase() === username.toLowerCase())) {
+    const user: UserRecord = {
+      id: randomUUID(),
+      username,
+      salt,
+      passwordHash: await passwordHash(password, salt),
+    };
+    if (
+      users.some(
+        (record) => record.username.toLowerCase() === username.toLowerCase(),
+      )
+    ) {
       sendJson(response, 409, { error: "用户名已存在" });
       return;
     }
@@ -196,16 +283,23 @@ async function handleHttp(request: IncomingMessage, response: ServerResponse): P
   }
   if (request.method === "POST" && requestUrl.pathname === "/api/auth/login") {
     const body = await parseJsonBody(request);
-    const username = typeof body.username === "string" ? body.username.trim() : "";
+    const username =
+      typeof body.username === "string" ? body.username.trim() : "";
     const password = typeof body.password === "string" ? body.password : "";
-    const user = users.find((candidate) => candidate.username.toLowerCase() === username.toLowerCase());
+    const user = users.find(
+      (candidate) =>
+        candidate.username.toLowerCase() === username.toLowerCase(),
+    );
     if (!user) {
       sendJson(response, 401, { error: "用户名或密码错误" });
       return;
     }
     const expected = Buffer.from(user.passwordHash, "hex");
     const actual = Buffer.from(await passwordHash(password, user.salt), "hex");
-    if (expected.length !== actual.length || !timingSafeEqual(expected, actual)) {
+    if (
+      expected.length !== actual.length ||
+      !timingSafeEqual(expected, actual)
+    ) {
       sendJson(response, 401, { error: "用户名或密码错误" });
       return;
     }
@@ -220,7 +314,10 @@ async function handleHttp(request: IncomingMessage, response: ServerResponse): P
   if (request.method === "POST" && requestUrl.pathname === "/api/rooms") {
     const existing = findRoomByUser(user.userId);
     if (existing) {
-      sendJson(response, 200, { roomCode: existing.room.code, playerId: existing.playerId });
+      sendJson(response, 200, {
+        roomCode: existing.room.code,
+        playerId: existing.playerId,
+      });
       return;
     }
     const room = createRoom();
@@ -236,13 +333,22 @@ async function handleHttp(request: IncomingMessage, response: ServerResponse): P
   }
   if (request.method === "POST" && requestUrl.pathname === "/api/room/ticket") {
     const member = findRoomByUser(user.userId);
-    if (!member) { sendJson(response, 404, { error: "房间已关闭" }); return; }
+    if (!member) {
+      sendJson(response, 404, { error: "房间已关闭" });
+      return;
+    }
     const ticket = randomBytes(24).toString("hex");
-    tickets.set(ticket, { room: member.room, side: member.playerId, expiresAt: Date.now() + 15000 });
+    tickets.set(ticket, {
+      room: member.room,
+      side: member.playerId,
+      expiresAt: Date.now() + 15000,
+    });
     sendJson(response, 200, { ticket });
     return;
   }
-  const joinMatch = requestUrl.pathname.match(/^\/api\/rooms\/([A-Z0-9]{6})\/join$/);
+  const joinMatch = requestUrl.pathname.match(
+    /^\/api\/rooms\/([A-Z0-9]{6})\/join$/,
+  );
   if (request.method === "POST" && joinMatch) {
     const code = joinMatch[1];
     const room = rooms.get(code);
@@ -278,7 +384,10 @@ const httpServer = createServer((request, response) => {
 });
 
 httpServer.on("upgrade", (request, socket, head) => {
-  const requestUrl = new URL(request.url ?? "/", `http://${request.headers.host ?? "localhost"}`);
+  const requestUrl = new URL(
+    request.url ?? "/",
+    `http://${request.headers.host ?? "localhost"}`,
+  );
   if (requestUrl.pathname !== "/ws") {
     socket.destroy();
     return;
@@ -286,26 +395,40 @@ httpServer.on("upgrade", (request, socket, head) => {
   const key = requestUrl.searchParams.get("ticket") ?? "";
   const ticket = tickets.get(key);
   tickets.delete(key);
-  if (!ticket || ticket.expiresAt <= Date.now() || rooms.get(ticket.room.code) !== ticket.room) {
+  if (
+    !ticket ||
+    ticket.expiresAt <= Date.now() ||
+    rooms.get(ticket.room.code) !== ticket.room
+  ) {
     socket.destroy();
     return;
   }
-  webSockets.handleUpgrade(request, socket, head, ws => handleSocket(ticket.room, ws, ticket.side));
+  webSockets.handleUpgrade(request, socket, head, (ws) =>
+    handleSocket(ticket.room, ws, ticket.side),
+  );
 });
 
 setInterval(() => {
   for (const room of rooms.values()) {
-    if (!room.sockets.size && Date.now() - room.idleSince > 600000) closeRoom(room);
-    if (room.sockets.size === 2) room.game.step(tickMs / 1000, performance.now());
+    if (!room.sockets.size && Date.now() - room.idleSince > 600000)
+      closeRoom(room);
+    if (room.sockets.size === 2)
+      room.game.step(tickMs / 1000, performance.now());
     for (const [socket, side] of room.sockets) {
       if (socket.bufferedAmount > 65536) continue;
-      sendSocket(socket, { type: "snapshot", online: room.sockets.size, state: room.game.view(side) });
+      sendSocket(socket, {
+        type: "snapshot",
+        online: room.sockets.size,
+        state: room.game.view(side),
+      });
     }
   }
 }, tickMs);
 setInterval(() => {
-  for (const [key, value] of tickets) if (value.expiresAt <= Date.now()) tickets.delete(key);
-  for (const [key, value] of sessions) if (value.expiresAt <= Date.now()) sessions.delete(key);
+  for (const [key, value] of tickets)
+    if (value.expiresAt <= Date.now()) tickets.delete(key);
+  for (const [key, value] of sessions)
+    if (value.expiresAt <= Date.now()) sessions.delete(key);
 }, 60000).unref();
 
 httpServer.listen(port, process.env.HOST ?? "127.0.0.1", () => {

@@ -17,7 +17,7 @@ npm run dev -- --host 0.0.0.0
 
 本机访问 Vite 输出的 Local 地址。同一受信任 Wi-Fi 的另一台设备可访问 Network 地址，浏览器请求由 Vite 转发至本机联机服务。各自注册游戏账号，一方建房，另一方输入六位房间码。开发环境的 HTTP 连接仅用于测试账号。公网部署需要由 HTTPS 反向代理转发 `/api` 与 WebSocket `/ws`。
 
-拖动星图或使用方向键移动自己的球。粉色和薄荷色各有三个符文。屏幕给出的是搭档的线索，可以通过通话交换线索。按本关要求沿月、潮、花的循环推算落点。双方站对、调整光带长度后，在 300 毫秒内各按一次共振。完成全部三关可重玩。断线暂停，返回同一账号、同一房间可恢复；任一人点离开房间会结束整间房。
+拖动星图或使用方向键移动自己的球。粉色和薄荷色各有三个符文。屏幕给出的是搭档的线索，可以点击「给搭档报点」把解出的符文发送给对方，也可以通过通话交换线索。按本关要求沿月、潮、花的循环推算落点。双方站对、调整光带长度后，在 300 毫秒内各按一次共振。完成全部三关可重玩。断线暂停，返回同一账号、同一房间可恢复；任一人点离开房间会结束整间房。
 
 ## Android 调试版
 
@@ -27,9 +27,8 @@ npm run dev -- --host 0.0.0.0
 
 ```powershell
 npm run build
-npx cap sync android
 cd android
 .\gradlew.bat assembleDebug
 ```
 
-安装包位于 android/app/build/outputs/apk/debug/app-debug.apk。GitHub Actions 的 Android debug APK 工作流也会生成同名调试包。正式发行使用独立发布签名。
+安装包位于 android/app/build/outputs/apk/debug/app-debug.apk。正式发行使用独立发布签名。
