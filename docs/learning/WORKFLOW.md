@@ -29,7 +29,7 @@
 
 - 操作者：Codex 代初始化和实现，用户已授权继续推进
 - 分支：feat/task-001-light-ribbon-prototype
-- 最近提交：待创建
+- 最近提交：5ed82f3
 - 检查结果：`npm run build` 通过；本地浏览器首屏和触控拖动已核验
 - 远程核验：SSH 访问 GitHub 返回 `Permission denied (publickey)`，推送待本机配置公钥后再做
 - 下一步：提交原型改动，随后进入 Android 打包链路准备
