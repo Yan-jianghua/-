@@ -1,0 +1,1650 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="color-scheme" content="light">
+<meta name="theme-color" content="#FFF9F2">
+<title>球球星球 · 游戏蓝图 v1.0</title>
+<meta name="description" content="《球球星球》游戏设计蓝图可视化：双人协作 × 派对联机 × 治愈养成。两颗球球，一根光带，一起滚过一颗会呼吸的小星球。">
+<style>
+/* ============ 基础变量 ============ */
+:root{
+  --cream:#FFF9F2;
+  --cream-2:#FFF3E8;
+  --card:#FFFDFA;
+  --ink:#5A4F46;
+  --ink-2:#8C7F73;
+  --ink-3:#A99B8E;
+  --line:rgba(190,168,148,.26);
+  --mint:#9FD8C6;      --mint-deep:#5BAE95;  --mint-soft:#EAF7F2;
+  --peach:#F7BBA9;     --peach-deep:#DD8A72; --peach-soft:#FDEEE7;
+  --haze:#A9C6DF;      --haze-deep:#799CBE;  --haze-soft:#EDF3F9;
+  --lilac:#C6BBE0;     --lilac-deep:#9C8DC2; --lilac-soft:#F3EFFA;
+  --sand:#EBD3AE;      --sand-deep:#C2A273;  --sand-soft:#FCF5E9;
+  --shadow:0 10px 28px rgba(176,148,120,.12);
+  --shadow-lg:0 18px 44px rgba(176,148,120,.18);
+  --r:24px;
+}
+*{box-sizing:border-box;}
+html{scroll-behavior:smooth;scroll-padding-top:86px;}
+body{
+  margin:0;
+  background:var(--cream);
+  color:var(--ink);
+  font-family:"PingFang SC","Hiragino Sans GB","Microsoft YaHei","Heiti SC",system-ui,-apple-system,sans-serif;
+  line-height:1.78;
+  font-size:16px;
+  -webkit-font-smoothing:antialiased;
+  overflow-x:hidden;
+}
+h1,h2,h3,h4{margin:0;font-weight:800;letter-spacing:.02em;line-height:1.35;color:#58483F;}
+p{margin:0;}
+a{color:inherit;text-decoration:none;}
+ul{margin:0;padding:0;list-style:none;}
+svg{display:block;}
+.wrap{max-width:1120px;margin:0 auto;padding:0 24px;}
+section{padding:80px 0;position:relative;}
+section:nth-of-type(even){background:linear-gradient(180deg,rgba(255,253,250,0),rgba(255,247,238,.55),rgba(255,253,250,0));}
+
+/* ============ 顶部导航 ============ */
+.nav{
+  position:fixed;top:0;left:0;right:0;z-index:60;
+  background:rgba(255,249,242,.84);
+  -webkit-backdrop-filter:blur(16px);
+  backdrop-filter:blur(16px);
+  border-bottom:1px solid var(--line);
+}
+.nav-inner{
+  max-width:1120px;margin:0 auto;padding:10px 24px;
+  display:flex;align-items:center;gap:20px;
+}
+.brand{display:flex;align-items:center;gap:9px;font-weight:800;font-size:.98rem;letter-spacing:.04em;white-space:nowrap;color:#58483F;}
+.brand i{
+  width:15px;height:15px;border-radius:50%;display:inline-block;
+  background:radial-gradient(circle at 34% 30%,#FFF1DC,#F7BBA9 58%,#E8907A);
+  box-shadow:0 0 0 3px rgba(247,187,169,.22);
+}
+.brand em{
+  width:15px;height:15px;border-radius:50%;display:inline-block;margin-left:-6px;
+  background:radial-gradient(circle at 34% 30%,#F4F9FE,#A9C6DF 58%,#95AFC9);
+  box-shadow:0 0 0 3px rgba(169,198,223,.22);
+}
+.nav-links{
+  margin-left:auto;display:flex;gap:2px;overflow-x:auto;scrollbar-width:none;-ms-overflow-style:none;
+}
+.nav-links::-webkit-scrollbar{display:none;}
+.nav-links a{
+  font-size:.8rem;color:var(--ink-2);padding:7px 11px;border-radius:999px;white-space:nowrap;
+  transition:background .25s,color .25s;
+}
+.nav-links a:hover{background:var(--mint-soft);color:var(--mint-deep);}
+.nav-links a.active{background:var(--peach-soft);color:var(--peach-deep);font-weight:700;}
+
+/* ============ Hero ============ */
+.hero{
+  position:relative;overflow:hidden;
+  padding:126px 0 70px;
+  background:
+    radial-gradient(880px 520px at 16% 14%,rgba(159,216,198,.30),transparent 62%),
+    radial-gradient(760px 480px at 84% 8%,rgba(247,187,169,.30),transparent 62%),
+    radial-gradient(820px 560px at 52% 100%,rgba(169,198,223,.22),transparent 62%),
+    var(--cream);
+}
+.hero::after{
+  content:"";position:absolute;inset:0;pointer-events:none;
+  background-image:radial-gradient(rgba(206,183,160,.28) 1px,transparent 1px);
+  background-size:26px 26px;
+  -webkit-mask-image:radial-gradient(ellipse at 50% 40%,#000 20%,transparent 78%);
+  mask-image:radial-gradient(ellipse at 50% 40%,#000 20%,transparent 78%);
+  opacity:.5;
+}
+.hero .wrap{position:relative;z-index:2;}
+.hero-eyebrow{
+  text-align:center;font-size:.78rem;letter-spacing:.24em;color:var(--ink-3);
+  text-transform:uppercase;margin-bottom:4px;
+}
+.hero-art{width:100%;max-width:960px;margin:0 auto;height:auto;}
+.hero h1{
+  text-align:center;
+  font-size:clamp(2.5rem,7vw,4rem);
+  letter-spacing:.2em;padding-left:.2em;
+  margin:6px 0 14px;
+  background:linear-gradient(120deg,#6A5748 0%,#8A6A55 40%,#5E7E74 100%);
+  -webkit-background-clip:text;background-clip:text;color:transparent;
+}
+.hero-sub{
+  text-align:center;font-size:clamp(.98rem,2.1vw,1.18rem);color:var(--ink-2);
+  max-width:640px;margin:0 auto 34px;letter-spacing:.04em;
+}
+.hero-points{
+  max-width:760px;margin:0 auto;display:grid;gap:12px;
+}
+.hero-points li{
+  display:flex;gap:14px;align-items:flex-start;
+  background:rgba(255,253,250,.72);
+  border:1px solid rgba(255,255,255,.9);
+  border-radius:18px;padding:14px 20px;
+  box-shadow:0 6px 20px rgba(176,148,120,.09);
+  font-size:.94rem;color:var(--ink-2);
+  transition:transform .3s ease,box-shadow .3s ease;
+}
+.hero-points li:hover{transform:translateY(-3px);box-shadow:var(--shadow);}
+.hero-points b{color:#58483F;font-weight:800;}
+.hero-points .pt{
+  flex:0 0 auto;width:9px;height:9px;border-radius:50%;margin-top:11px;
+  background:var(--mint);
+}
+.hero-points li:nth-child(2) .pt{background:var(--peach);}
+.hero-points li:nth-child(3) .pt{background:var(--haze);}
+.hero-tags{
+  display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-top:32px;
+}
+.hero-tags span{
+  font-size:.76rem;letter-spacing:.06em;color:var(--ink-2);
+  background:rgba(255,253,250,.85);border:1px solid var(--line);
+  border-radius:999px;padding:5px 14px;
+}
+
+/* Hero 球球动画 */
+.ball{transform-box:fill-box;transform-origin:center;animation:breathe 5.4s ease-in-out infinite;}
+.ball.b2{animation-delay:-2.6s;}
+@keyframes breathe{0%,100%{transform:scale(1);}50%{transform:scale(1.035);}}
+.ribbon{animation:flow 3.4s linear infinite;}
+@keyframes flow{to{stroke-dashoffset:-64;}}
+.ribbon-glow{animation:glowPulse 5.4s ease-in-out infinite;}
+@keyframes glowPulse{0%,100%{opacity:.40;}50%{opacity:.66;}}
+.sparkle{transform-box:fill-box;transform-origin:center;animation:twinkle 4s ease-in-out infinite;}
+@keyframes twinkle{0%,100%{opacity:.25;transform:scale(.8);}50%{opacity:.9;transform:scale(1.2);}}
+.ball-label{font-size:19px;font-weight:800;fill:#5F5148;letter-spacing:.06em;}
+.ball-sub{font-size:13px;fill:#A3937F;letter-spacing:.04em;}
+
+/* ============ 数据条 ============ */
+.stats{padding:56px 0 64px;}
+.stats-grid{
+  display:grid;grid-template-columns:repeat(5,1fr);gap:14px;
+}
+.stat{
+  background:var(--card);border-radius:20px;padding:22px 16px;text-align:center;
+  border:1px solid var(--line);box-shadow:var(--shadow);
+  transition:transform .35s ease,box-shadow .35s ease;
+}
+.stat:hover{transform:translateY(-5px);box-shadow:var(--shadow-lg);}
+.stat b{
+  display:block;font-size:clamp(1.5rem,3.4vw,2.1rem);line-height:1.15;
+  letter-spacing:.01em;color:#58483F;
+}
+.stat b small{font-size:.55em;font-weight:700;margin:0 1px;color:var(--ink-2);}
+.stat span{display:block;font-size:.78rem;color:var(--ink-2);letter-spacing:.1em;margin-top:6px;}
+.stat:nth-child(1) b{color:var(--mint-deep);}
+.stat:nth-child(2) b{color:var(--peach-deep);}
+.stat:nth-child(3) b{color:var(--haze-deep);}
+.stat:nth-child(4) b{color:var(--lilac-deep);}
+.stat:nth-child(5) b{color:var(--sand-deep);}
+
+/* ============ 区块标题 ============ */
+.sec-head{max-width:720px;margin:0 auto 46px;text-align:center;}
+.kicker{
+  display:inline-flex;align-items:center;gap:8px;
+  font-size:.74rem;letter-spacing:.18em;font-weight:700;
+  color:var(--mint-deep);background:var(--mint-soft);
+  border-radius:999px;padding:6px 16px;margin-bottom:16px;
+}
+.kicker.p{color:var(--peach-deep);background:var(--peach-soft);}
+.kicker.h{color:var(--haze-deep);background:var(--haze-soft);}
+.kicker.l{color:var(--lilac-deep);background:var(--lilac-soft);}
+.kicker.s{color:var(--sand-deep);background:var(--sand-soft);}
+.sec-head h2{font-size:clamp(1.55rem,3.6vw,2.15rem);letter-spacing:.06em;}
+.sec-sub{margin-top:12px;color:var(--ink-2);font-size:.95rem;}
+
+/* ============ 通用卡片 ============ */
+.card{
+  background:var(--card);border:1px solid var(--line);border-radius:var(--r);
+  box-shadow:var(--shadow);padding:26px 24px;
+}
+.lift{transition:transform .35s ease,box-shadow .35s ease,opacity .7s ease;}
+.lift:hover{transform:translateY(-6px);box-shadow:var(--shadow-lg);}
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:20px;}
+.grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;}
+.grid-4{display:grid;grid-template-columns:repeat(4,1fr);gap:18px;}
+.auto-grid{display:grid;gap:18px;}
+.tag{
+  display:inline-block;font-size:.72rem;letter-spacing:.06em;
+  padding:3px 10px;border-radius:999px;background:var(--cream-2);
+  color:var(--ink-2);border:1px solid var(--line);
+}
+.note{
+  margin-top:26px;font-size:.86rem;color:var(--ink-2);text-align:center;
+  background:rgba(255,253,250,.75);border:1px dashed var(--line);
+  border-radius:16px;padding:14px 20px;
+}
+
+/* ============ 设计支柱 ============ */
+.pillar{position:relative;overflow:hidden;}
+.pillar::before{
+  content:"";position:absolute;left:0;top:0;bottom:0;width:5px;border-radius:5px 0 0 5px;
+  background:var(--mint);
+}
+.grid-4 .pillar:nth-child(2)::before{background:var(--peach);}
+.grid-4 .pillar:nth-child(3)::before{background:var(--haze);}
+.grid-4 .pillar:nth-child(4)::before{background:var(--lilac);}
+.pillar .pnum{
+  font-size:.74rem;font-weight:800;letter-spacing:.2em;color:var(--mint-deep);
+  margin-bottom:10px;
+}
+.grid-4 .pillar:nth-child(2) .pnum{color:var(--peach-deep);}
+.grid-4 .pillar:nth-child(3) .pnum{color:var(--haze-deep);}
+.grid-4 .pillar:nth-child(4) .pnum{color:var(--lilac-deep);}
+.pillar h3{font-size:1.06rem;letter-spacing:.03em;margin-bottom:10px;}
+.pillar p{font-size:.87rem;color:var(--ink-2);line-height:1.85;}
+.pillar .check{
+  margin-top:14px;padding-top:14px;border-top:1px dashed var(--line);
+  font-size:.8rem;color:var(--ink-3);
+}
+.pillar .check b{color:var(--ink-2);font-weight:700;}
+
+/* ============ 硬约束 & 手感 ============ */
+.hard6{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(318px,100%),1fr));gap:16px;}
+.hard{padding:22px 22px 20px;}
+.hard-top{display:flex;align-items:center;gap:10px;margin-bottom:9px;}
+.hard-top .hi{
+  flex:0 0 auto;width:30px;height:30px;border-radius:10px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:.92rem;font-weight:800;color:#fff;
+  background:linear-gradient(140deg,var(--mint),var(--mint-deep));
+}
+.hard:nth-child(2) .hi{background:linear-gradient(140deg,#F7C6A8,#E8907A);}
+.hard:nth-child(3) .hi{background:linear-gradient(140deg,#BFD5E8,#7FA6C9);}
+.hard:nth-child(4) .hi{background:linear-gradient(140deg,#F3D6B4,#C2A273);}
+.hard:nth-child(5) .hi{background:linear-gradient(140deg,#D2C7E8,#9C8DC2);}
+.hard:nth-child(6) .hi{background:linear-gradient(140deg,#CDEDE1,#5BAE95);}
+.hard h3{font-size:.99rem;letter-spacing:.08em;}
+.hard .resp{font-size:.82rem;color:var(--ink-2);line-height:1.8;}
+.hard .metric{
+  margin-top:12px;padding-top:11px;border-top:1px dashed var(--line);
+  font-size:.79rem;line-height:1.7;color:var(--ink-2);
+}
+.hard .metric b{
+  display:inline-block;font-size:.66rem;letter-spacing:.14em;
+  color:var(--mint-deep);background:var(--mint-soft);
+  border-radius:6px;padding:2px 7px;margin-right:7px;font-weight:800;
+}
+.hard:nth-child(2) .metric b{color:var(--peach-deep);background:var(--peach-soft);}
+.hard:nth-child(3) .metric b{color:var(--haze-deep);background:var(--haze-soft);}
+.hard:nth-child(4) .metric b{color:var(--sand-deep);background:var(--sand-soft);}
+.hard:nth-child(5) .metric b{color:var(--lilac-deep);background:var(--lilac-soft);}
+.hard:nth-child(6) .metric b{color:var(--mint-deep);background:var(--mint-soft);}
+.hard .metric .hl{color:#58483F;font-weight:700;letter-spacing:0;font-size:1em;background:none;padding:0;margin:0;}
+
+.feel{margin-top:20px;padding:26px 26px 24px;}
+.feel h3{font-size:1.02rem;letter-spacing:.06em;}
+.feel .feel-sub{font-size:.8rem;color:var(--ink-3);margin:5px 0 18px;letter-spacing:.02em;}
+.feel-grid{display:grid;grid-template-columns:1.02fr 1fr;gap:26px;}
+.feel-grid h4{font-size:.8rem;letter-spacing:.12em;color:var(--ink-2);margin-bottom:10px;}
+.feed{display:grid;gap:9px;}
+.feed-item{
+  display:flex;gap:12px;align-items:flex-start;
+  background:var(--cream);border:1px solid var(--line);
+  border-radius:14px;padding:10px 14px;
+}
+.feed-item b{flex:0 0 48px;font-size:.82rem;color:var(--mint-deep);letter-spacing:.02em;}
+.feed-item:nth-child(2) b{color:var(--peach-deep);}
+.feed-item:nth-child(3) b{color:var(--haze-deep);}
+.feed-item:nth-child(4) b{color:var(--lilac-deep);}
+.feed-item span{font-size:.79rem;color:var(--ink-2);line-height:1.7;}
+.dots{display:grid;gap:7px;}
+.dots li{position:relative;padding-left:15px;font-size:.79rem;color:var(--ink-2);line-height:1.7;}
+.dots li::before{
+  content:"";position:absolute;left:2px;top:8px;width:6px;height:6px;
+  border-radius:50%;background:var(--mint);
+}
+.dots li b{color:#58483F;font-weight:700;}
+.juice{display:flex;flex-wrap:wrap;gap:7px;margin-top:14px;}
+.juice span{
+  font-size:.75rem;background:var(--peach-soft);color:var(--peach-deep);
+  border-radius:999px;padding:4px 11px;
+}
+
+/* ============ 光带 ============ */
+.bond-art{max-width:900px;margin:0 auto 10px;width:100%;}
+.bond-chips{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin:24px 0 40px;}
+.bond-chip{
+  background:var(--card);border:1px solid var(--line);border-radius:18px;
+  padding:16px 18px;text-align:center;box-shadow:var(--shadow);
+}
+.bond-chip b{display:block;font-size:1.02rem;color:#58483F;letter-spacing:.02em;}
+.bond-chip span{display:block;font-size:.8rem;color:var(--ink-2);margin-top:4px;}
+.verbs{grid-template-columns:repeat(auto-fit,minmax(min(238px,100%),1fr));}
+.verb{position:relative;padding-top:24px;}
+.verb .no{
+  position:absolute;top:-14px;left:24px;
+  width:34px;height:34px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  font-size:.86rem;font-weight:800;color:#fff;
+  background:linear-gradient(140deg,var(--mint),var(--mint-deep));
+  box-shadow:0 6px 16px rgba(122,186,166,.35);
+}
+.verb:nth-child(2) .no{background:linear-gradient(140deg,#F7C6A8,#E8907A);box-shadow:0 6px 16px rgba(232,144,122,.32);}
+.verb:nth-child(3) .no{background:linear-gradient(140deg,#BFD5E8,#7FA6C9);box-shadow:0 6px 16px rgba(127,166,201,.32);}
+.verb:nth-child(4) .no{background:linear-gradient(140deg,#D2C7E8,#9C8DC2);box-shadow:0 6px 16px rgba(156,141,194,.30);}
+.verb:nth-child(5) .no{background:linear-gradient(140deg,#CDEDE1,#5BAE95);box-shadow:0 6px 16px rgba(91,174,149,.30);}
+.verb:nth-child(6) .no{background:linear-gradient(140deg,#F3D6B4,#C2A273);box-shadow:0 6px 16px rgba(194,162,115,.30);}
+.verb:nth-child(7) .no{background:linear-gradient(140deg,#F7B9A9,#DD8A72);box-shadow:0 6px 16px rgba(221,138,114,.30);}
+.verb h3{font-size:1.12rem;margin-bottom:8px;letter-spacing:.08em;}
+.verb .op{font-size:.83rem;color:var(--ink-2);margin-bottom:10px;}
+.verb .use{font-size:.83rem;color:var(--ink-2);padding-top:10px;border-top:1px dashed var(--line);}
+.verb .use b{color:var(--mint-deep);font-weight:700;font-size:.74rem;letter-spacing:.1em;margin-right:6px;}
+.duo{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:26px;}
+.duo-card{padding:22px 24px;border-radius:22px;border:1px solid var(--line);box-shadow:var(--shadow);}
+.duo-card.pupu{background:linear-gradient(150deg,#FFF6EC,#FDEDE2);}
+.duo-card.dudu{background:linear-gradient(150deg,#F1F6FC,#E9F0F8);}
+.duo-card h4{font-size:1rem;margin-bottom:6px;letter-spacing:.06em;}
+.duo-card p{font-size:.84rem;color:var(--ink-2);}
+.duo-card .abilities{margin-top:10px;display:flex;flex-wrap:wrap;gap:6px;}
+.duo-card .abilities span{font-size:.74rem;background:rgba(255,255,255,.7);border-radius:999px;padding:3px 10px;color:var(--ink-2);}
+.combo{margin-top:22px;display:flex;flex-wrap:wrap;gap:10px;justify-content:center;}
+.combo .tag{background:var(--cream);font-size:.78rem;padding:6px 14px;}
+
+/* ============ 星球 ============ */
+.planets{grid-template-columns:repeat(auto-fit,minmax(min(300px,100%),1fr));}
+.planet{display:flex;gap:16px;align-items:flex-start;}
+.orb{
+  flex:0 0 auto;width:52px;height:52px;border-radius:50%;position:relative;
+  background:radial-gradient(circle at 32% 28%,#FFFFFF,#9FD8C6 62%,#5BAE95);
+  box-shadow:inset -6px -8px 14px rgba(255,255,255,.55),0 8px 18px rgba(120,150,140,.22);
+}
+.orb::after{
+  content:"";position:absolute;left:18%;top:16%;width:26%;height:18%;
+  border-radius:50%;background:rgba(255,255,255,.75);filter:blur(1px);
+}
+.orb.o2{background:radial-gradient(circle at 32% 28%,#FFFFFF,#F7BBA9 62%,#DD8A72);box-shadow:inset -6px -8px 14px rgba(255,255,255,.5),0 8px 18px rgba(221,138,114,.22);}
+.orb.o3{background:radial-gradient(circle at 32% 28%,#FFFFFF,#A9C6DF 62%,#799CBE);box-shadow:inset -6px -8px 14px rgba(255,255,255,.5),0 8px 18px rgba(121,156,190,.22);}
+.orb.o4{background:radial-gradient(circle at 32% 28%,#FFFFFF,#D8A48E 62%,#B47E66);box-shadow:inset -6px -8px 14px rgba(255,255,255,.45),0 8px 18px rgba(180,126,102,.22);}
+.orb.o5{background:radial-gradient(circle at 32% 28%,#FFFFFF,#C6BBE0 62%,#9C8DC2);box-shadow:inset -6px -8px 14px rgba(255,255,255,.45),0 8px 18px rgba(156,141,194,.22);}
+.orb.o6{background:radial-gradient(circle at 32% 28%,#FFFFFF,#EBD3AE 62%,#C2A273);box-shadow:inset -6px -8px 14px rgba(255,255,255,.45),0 8px 18px rgba(194,162,115,.22);}
+.planet h3{font-size:1rem;letter-spacing:.05em;margin-bottom:4px;}
+.planet .rule{font-size:.76rem;color:var(--mint-deep);letter-spacing:.04em;margin-bottom:8px;font-weight:700;}
+.planet:nth-child(2) .rule{color:var(--peach-deep);}
+.planet:nth-child(3) .rule{color:var(--haze-deep);}
+.planet:nth-child(4) .rule{color:#B47E66;}
+.planet:nth-child(5) .rule{color:var(--lilac-deep);}
+.planet:nth-child(6) .rule{color:var(--sand-deep);}
+.planet p{font-size:.83rem;color:var(--ink-2);line-height:1.8;}
+
+/* ============ 七大模式 ============ */
+.modes{grid-template-columns:repeat(auto-fit,minmax(min(300px,100%),1fr));}
+.mode{position:relative;padding-top:28px;}
+.mode .mno{
+  position:absolute;top:-14px;left:24px;
+  min-width:36px;height:36px;padding:0 9px;border-radius:12px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:.84rem;font-weight:800;color:#fff;letter-spacing:.02em;
+  background:linear-gradient(140deg,var(--mint),var(--mint-deep));
+}
+.mode:nth-child(2) .mno{background:linear-gradient(140deg,#F7C6A8,#E8907A);}
+.mode:nth-child(3) .mno{background:linear-gradient(140deg,#BFD5E8,#7FA6C9);}
+.mode:nth-child(4) .mno{background:linear-gradient(140deg,#D2C7E8,#9C8DC2);}
+.mode:nth-child(5) .mno{background:linear-gradient(140deg,#F3D6B4,#C2A273);}
+.mode:nth-child(6) .mno{background:linear-gradient(140deg,#CDEDE1,#5BAE95);}
+.mode:nth-child(7) .mno{background:linear-gradient(140deg,#F7B9A9,#DD8A72);}
+.mode h3{font-size:1.05rem;letter-spacing:.04em;margin-bottom:10px;}
+.meta{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px;}
+.meta span{
+  font-size:.72rem;color:var(--ink-2);background:var(--cream-2);
+  border-radius:8px;padding:3px 9px;
+}
+.mode .fun{font-size:.85rem;color:var(--ink-2);line-height:1.8;}
+.mode .value{
+  margin-top:12px;padding:10px 14px;border-radius:12px;background:var(--peach-soft);
+  font-size:.82rem;color:var(--peach-deep);font-weight:700;
+}
+.mode .value::before{content:"“";opacity:.55;}
+.mode .value::after{content:"”";opacity:.55;}
+.mode .launch{
+  margin-top:10px;font-size:.78rem;color:var(--ink-3);
+  padding-top:10px;border-top:1px dashed var(--line);
+}
+.mode .launch b{color:var(--ink-2);font-weight:700;letter-spacing:.08em;margin-right:6px;}
+.rhythm-note{
+  display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-bottom:34px;
+}
+.rhythm-note span{
+  font-size:.78rem;padding:6px 14px;border-radius:999px;
+  background:var(--card);border:1px solid var(--line);color:var(--ink-2);
+}
+
+/* ============ 核心循环 ============ */
+.loop-wrap{display:grid;grid-template-columns:1.05fr 1fr;gap:40px;align-items:center;}
+.ring{
+  position:relative;width:100%;max-width:460px;margin:0 auto;aspect-ratio:1/1;
+}
+.ring::before{
+  content:"";position:absolute;inset:0;border-radius:50%;
+  background:conic-gradient(from 0deg,
+    var(--mint) 0deg 84deg, transparent 84deg 90deg,
+    var(--peach) 90deg 174deg, transparent 174deg 180deg,
+    var(--haze) 180deg 264deg, transparent 264deg 270deg,
+    var(--lilac) 270deg 354deg, transparent 354deg 360deg);
+  -webkit-mask:radial-gradient(closest-side,transparent 84%,#000 85%);
+  mask:radial-gradient(closest-side,transparent 84%,#000 85%);
+  filter:drop-shadow(0 8px 20px rgba(176,148,120,.16));
+}
+.ring::after{
+  content:"";position:absolute;inset:6%;border-radius:50%;
+  border:1.5px dashed rgba(190,168,148,.5);
+  animation:spin 46s linear infinite;
+}
+@keyframes spin{to{transform:rotate(360deg);}}
+.ring-center{
+  position:absolute;inset:13%;z-index:2;border-radius:50%;
+  background:radial-gradient(circle at 36% 30%,#FFFDFA,#FFF5EA);
+  border:1px solid rgba(255,255,255,.9);
+  box-shadow:inset 0 4px 22px rgba(206,178,150,.14);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  text-align:center;padding:10px;
+}
+.ring-center b{font-size:clamp(1rem,2.2vw,1.3rem);letter-spacing:.12em;color:#58483F;}
+.ring-center span{font-size:.78rem;color:var(--ink-2);letter-spacing:.14em;margin-top:6px;}
+.ring-center i{
+  display:block;width:34px;height:3px;border-radius:3px;margin:10px auto 0;
+  background:linear-gradient(90deg,var(--mint),var(--peach));
+}
+.ring-label{
+  position:absolute;transform:translate(-50%,-50%);z-index:2;
+  font-size:.82rem;font-weight:700;letter-spacing:.06em;
+  padding:6px 14px;border-radius:999px;white-space:nowrap;
+  background:var(--card);border:1px solid var(--line);
+  box-shadow:0 6px 16px rgba(176,148,120,.14);
+}
+.rl1{left:81%;top:16%;color:var(--mint-deep);}
+.rl2{left:81%;top:84%;color:var(--peach-deep);}
+.rl3{left:19%;top:84%;color:var(--haze-deep);}
+.rl4{left:19%;top:16%;color:var(--lilac-deep);}
+.loops{display:grid;gap:14px;}
+.loop-item{
+  background:var(--card);border:1px solid var(--line);border-radius:18px;
+  padding:18px 20px;box-shadow:var(--shadow);
+  border-left:4px solid var(--mint);
+}
+.loop-item:nth-child(2){border-left-color:var(--peach);}
+.loop-item:nth-child(3){border-left-color:var(--haze);}
+.loop-item:nth-child(4){border-left-color:var(--lilac);}
+.loop-item h4{
+  font-size:.86rem;letter-spacing:.14em;color:var(--ink-2);margin-bottom:6px;
+}
+.loop-item p{font-size:.86rem;color:var(--ink-2);line-height:1.8;}
+.loop-item p b{color:#58483F;font-weight:600;}
+
+/* ============ 默契 × 智力 ============ */
+.split{display:grid;grid-template-columns:1fr 1fr;gap:30px;align-items:start;}
+.split-head{
+  display:flex;align-items:center;gap:12px;margin-bottom:18px;
+}
+.split-head .dotmark{
+  width:10px;height:10px;border-radius:50%;background:var(--mint);flex:0 0 auto;
+}
+.split-head .dotmark.p{background:var(--peach);}
+.split-head h3{font-size:1.15rem;letter-spacing:.1em;}
+.split-head small{
+  margin-left:auto;font-size:.72rem;color:var(--ink-3);letter-spacing:.12em;
+}
+.stack{display:grid;gap:12px;}
+.mini{
+  background:var(--card);border:1px solid var(--line);border-radius:18px;
+  padding:16px 20px;box-shadow:var(--shadow);
+  transition:transform .3s ease,box-shadow .3s ease;
+}
+.mini:hover{transform:translateX(4px);box-shadow:var(--shadow-lg);}
+.mini h4{font-size:.96rem;margin-bottom:5px;letter-spacing:.04em;}
+.mini h4 em{font-style:normal;font-size:.72rem;color:var(--mint-deep);letter-spacing:.1em;margin-left:8px;font-weight:700;}
+.mini p{font-size:.82rem;color:var(--ink-2);line-height:1.8;}
+.mini .tol{
+  display:inline-block;margin-top:8px;font-size:.74rem;color:var(--ink-3);
+  background:var(--cream-2);border-radius:8px;padding:3px 10px;
+}
+.split .mini h4 em.pc{color:var(--peach-deep);}
+.hints{margin-top:26px;display:grid;grid-template-columns:repeat(3,1fr);gap:14px;}
+.hint-card{
+  background:linear-gradient(150deg,#FFFDFA,#FFF6EC);
+  border:1px solid var(--line);border-radius:18px;padding:18px 18px;box-shadow:var(--shadow);
+}
+.hint-card b{display:block;font-size:.9rem;margin-bottom:4px;}
+.hint-card span{font-size:.8rem;color:var(--ink-2);line-height:1.75;}
+.hint-card:nth-child(1) b{color:var(--mint-deep);}
+.hint-card:nth-child(2) b{color:var(--haze-deep);}
+.hint-card:nth-child(3) b{color:var(--sand-deep);}
+
+/* ============ 稳定性 ============ */
+.stability{grid-template-columns:repeat(auto-fit,minmax(min(240px,100%),1fr));}
+.stab{text-align:center;padding:24px 18px;}
+.stab b{
+  display:block;font-size:clamp(1.35rem,2.8vw,1.75rem);
+  letter-spacing:.01em;color:var(--mint-deep);line-height:1.2;
+}
+.stab b small{font-size:.62em;font-weight:700;color:var(--ink-2);}
+.stab span{display:block;font-size:.8rem;color:var(--ink-2);margin-top:6px;}
+.stab em{display:block;font-size:.72rem;color:var(--ink-3);font-style:normal;margin-top:6px;}
+.stab:nth-child(2) b{color:var(--peach-deep);}
+.stab:nth-child(3) b{color:var(--haze-deep);}
+.stab:nth-child(4) b{color:var(--lilac-deep);}
+.stab:nth-child(5) b{color:var(--sand-deep);}
+.stab:nth-child(6) b{color:var(--mint-deep);}
+.stab:nth-child(7) b{color:var(--haze-deep);}
+.stab:nth-child(8) b{color:var(--peach-deep);}
+.arch{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(240px,100%),1fr));gap:14px;margin-top:20px;}
+.arch div{
+  background:rgba(255,253,250,.8);border:1px dashed var(--line);border-radius:16px;
+  padding:14px 18px;font-size:.83rem;color:var(--ink-2);
+}
+.arch b{color:#58483F;display:block;font-size:.84rem;margin-bottom:3px;letter-spacing:.04em;}
+
+/* ============ 商业化 ============ */
+.biz{display:grid;grid-template-columns:1.15fr 1fr;gap:24px;align-items:start;}
+.money{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:18px;}
+.coin{
+  flex:1;min-width:150px;border-radius:16px;padding:14px 18px;
+  background:var(--sand-soft);border:1px solid var(--line);
+}
+.coin.b{background:var(--mint-soft);}
+.coin b{display:block;font-size:.95rem;letter-spacing:.06em;}
+.coin span{display:block;font-size:.78rem;color:var(--ink-2);}
+.price-list{display:grid;gap:9px;}
+.price-row{
+  display:flex;justify-content:space-between;gap:12px;align-items:baseline;
+  font-size:.85rem;color:var(--ink-2);padding-bottom:9px;
+  border-bottom:1px dashed var(--line);
+}
+.price-row:last-child{border-bottom:none;padding-bottom:0;}
+.price-row b{color:#58483F;font-weight:700;white-space:nowrap;}
+.ethics{display:grid;gap:10px;}
+.ethics li{
+  display:flex;gap:10px;font-size:.85rem;color:var(--ink-2);
+  background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px 16px;
+}
+.ethics li::before{
+  content:"✓";flex:0 0 auto;width:20px;height:20px;border-radius:50%;
+  background:var(--mint-soft);color:var(--mint-deep);
+  font-size:.72rem;display:flex;align-items:center;justify-content:center;margin-top:4px;
+}
+.ethics b{color:#58483F;font-weight:700;}
+.revenue{margin-top:16px;display:grid;gap:10px;}
+.rev-row{display:grid;grid-template-columns:88px 1fr 44px;gap:10px;align-items:center;font-size:.8rem;color:var(--ink-2);}
+.rev-track{height:9px;border-radius:999px;background:#F4EBE0;overflow:hidden;}
+.rev-fill{display:block;height:100%;border-radius:999px;background:linear-gradient(90deg,var(--mint),var(--mint-deep));width:0;transition:width 1.1s cubic-bezier(.22,1,.36,1) .15s;}
+.reveal.in .rev-fill{width:var(--w);}
+.rev-row:nth-child(2) .rev-fill{background:linear-gradient(90deg,var(--peach),var(--peach-deep));}
+.rev-row:nth-child(3) .rev-fill{background:linear-gradient(90deg,var(--haze),var(--haze-deep));}
+.rev-row:nth-child(4) .rev-fill{background:linear-gradient(90deg,var(--lilac),var(--lilac-deep));}
+
+/* ============ 路线图 ============ */
+.timeline{
+  overflow-x:auto;padding:26px 4px 18px;scrollbar-width:thin;
+  scroll-snap-type:x proximity;
+}
+.timeline-track{
+  display:flex;gap:16px;min-width:max-content;position:relative;padding-top:34px;
+}
+.timeline-track::before{
+  content:"";position:absolute;left:8px;right:8px;top:15px;height:3px;
+  border-radius:3px;
+  background:linear-gradient(90deg,var(--mint),var(--peach),var(--haze),var(--lilac),var(--sand),var(--mint));
+  opacity:.6;
+}
+.tl{
+  width:172px;flex:0 0 auto;scroll-snap-align:start;position:relative;
+  background:var(--card);border:1px solid var(--line);border-radius:18px;
+  padding:18px 18px 20px;box-shadow:var(--shadow);
+  transition:transform .3s ease,box-shadow .3s ease;
+}
+.tl:hover{transform:translateY(-5px);box-shadow:var(--shadow-lg);}
+.tl::before{
+  content:"";position:absolute;left:24px;top:-25px;width:13px;height:13px;border-radius:50%;
+  background:#fff;border:3px solid var(--mint);box-shadow:0 0 0 4px rgba(159,216,198,.18);
+}
+.tl:nth-child(2)::before{border-color:var(--peach);box-shadow:0 0 0 4px rgba(247,187,169,.2);}
+.tl:nth-child(3)::before{border-color:var(--haze);box-shadow:0 0 0 4px rgba(169,198,223,.2);}
+.tl:nth-child(4)::before{border-color:var(--lilac);box-shadow:0 0 0 4px rgba(198,187,224,.2);}
+.tl:nth-child(5)::before{border-color:var(--sand);box-shadow:0 0 0 4px rgba(235,211,174,.25);}
+.tl:nth-child(6)::before{border-color:var(--mint-deep);box-shadow:0 0 0 4px rgba(91,174,149,.18);}
+.tl .m{font-size:.72rem;letter-spacing:.14em;color:var(--ink-3);font-weight:700;}
+.tl h4{font-size:.95rem;margin:6px 0 8px;letter-spacing:.04em;}
+.tl p{font-size:.79rem;color:var(--ink-2);line-height:1.75;}
+.tl .bar-note{margin-top:10px;font-size:.72rem;color:var(--mint-deep);letter-spacing:.04em;}
+.tl:nth-child(n+3) .bar-note{color:var(--haze-deep);}
+.timeline-hint{text-align:center;font-size:.76rem;color:var(--ink-3);letter-spacing:.08em;margin-top:6px;}
+
+/* ============ KPI ============ */
+.kpi{display:grid;grid-template-columns:1fr 1fr;gap:34px;align-items:start;}
+.kpi-block h3{font-size:1rem;letter-spacing:.1em;margin-bottom:18px;color:var(--ink-2);}
+.kpi-row{display:grid;grid-template-columns:104px 1fr 60px;gap:14px;align-items:center;margin-bottom:16px;}
+.kpi-row .k{font-size:.84rem;color:var(--ink-2);}
+.kpi-row .v{font-size:.9rem;font-weight:800;color:#58483F;text-align:right;}
+.bar{height:12px;border-radius:999px;background:#F4EBE0;overflow:hidden;}
+.bar-fill{
+  display:block;height:100%;border-radius:999px;width:0;
+  background:linear-gradient(90deg,var(--mint),var(--mint-deep));
+  transition:width 1.1s cubic-bezier(.22,1,.36,1) .1s;
+}
+.reveal.in .bar-fill{width:var(--w);}
+.kpi-row:nth-child(3) .bar-fill{background:linear-gradient(90deg,#F7C6A8,#E8907A);}
+.kpi-row:nth-child(4) .bar-fill{background:linear-gradient(90deg,#BFD5E8,#7FA6C9);}
+.kpi-row:nth-child(5) .bar-fill{background:linear-gradient(90deg,#D2C7E8,#9C8DC2);}
+.kpi-block.alt .kpi-row:nth-child(2) .bar-fill{background:linear-gradient(90deg,var(--mint),var(--mint-deep));}
+.kpi-block.alt .kpi-row:nth-child(3) .bar-fill{background:linear-gradient(90deg,#F3D6B4,#C2A273);}
+.kpi-block.alt .kpi-row:nth-child(4) .bar-fill{background:linear-gradient(90deg,#BFD5E8,#7FA6C9);}
+.kpi-extra{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:26px;}
+.kpi-tile{
+  background:var(--card);border:1px solid var(--line);border-radius:16px;
+  padding:16px 12px;text-align:center;box-shadow:var(--shadow);
+}
+.kpi-tile b{display:block;font-size:1.2rem;color:var(--peach-deep);}
+.kpi-tile span{display:block;font-size:.74rem;color:var(--ink-2);margin-top:4px;}
+
+/* ============ 页脚 ============ */
+.footer{
+  padding:64px 0 56px;text-align:center;
+  background:linear-gradient(180deg,rgba(255,253,250,0),#FFF3E8);
+  border-top:1px solid var(--line);
+}
+.footer .quote{
+  font-size:clamp(1.05rem,2.6vw,1.45rem);font-weight:800;letter-spacing:.08em;
+  color:#58483F;max-width:760px;margin:0 auto 14px;line-height:1.7;
+}
+.footer .quote span{color:var(--mint-deep);}
+.footer p{font-size:.84rem;color:var(--ink-2);}
+.footer .balls{display:flex;justify-content:center;gap:26px;margin-bottom:26px;}
+.footer .balls i{
+  width:17px;height:17px;border-radius:50%;display:block;
+  background:radial-gradient(circle at 34% 30%,#FFE7C9,#F7BBA9 60%,#E8907A);
+  animation:breathe 5.4s ease-in-out infinite;
+}
+.footer .balls i:last-child{
+  background:radial-gradient(circle at 34% 30%,#F4F9FE,#A9C6DF 60%,#95AFC9);
+  animation-delay:-2.6s;
+}
+.footer .line{
+  width:52px;height:3px;border-radius:3px;margin:22px auto 0;
+  background:linear-gradient(90deg,var(--mint),var(--peach));
+}
+.footer .ver{margin-top:18px;font-size:.74rem;color:var(--ink-3);letter-spacing:.16em;}
+.footer .ver b{color:var(--ink-2);letter-spacing:.1em;}
+
+/* ============ 滚动淡入 ============ */
+.reveal{opacity:0;transform:translateY(20px);transition:opacity .7s ease,transform .7s cubic-bezier(.22,1,.36,1);}
+.reveal.in{opacity:1;transform:none;}
+.reveal.lift,.reveal.stat,.reveal.tl,.reveal.mini{transition:opacity .7s ease,transform .42s cubic-bezier(.22,1,.36,1),box-shadow .38s ease;}
+/* 修正：.reveal.in 的 transform:none 会压过后面的 hover 抬起，这里提升优先级 */
+.reveal.in.lift:hover,.reveal.in.stat:hover{transform:translateY(-6px);}
+.reveal.in.mini:hover{transform:translateX(4px);}
+.reveal.in.tl:hover{transform:translateY(-5px);}
+
+/* ============ 响应式 ============ */
+@media (max-width:980px){
+  .grid-4{grid-template-columns:1fr 1fr;}
+  .loop-wrap{grid-template-columns:1fr;gap:30px;}
+  .split{grid-template-columns:1fr;}
+  .biz{grid-template-columns:1fr;}
+  .kpi{grid-template-columns:1fr;gap:26px;}
+  .bond-chips{grid-template-columns:1fr;}
+}
+@media (max-width:768px){
+  body{font-size:15px;}
+  section{padding:58px 0;}
+  .hero{padding:104px 0 48px;}
+  .stats-grid{grid-template-columns:repeat(2,1fr);}
+  .stats-grid .stat:last-child{grid-column:1/-1;}
+  .grid-2,.grid-3,.grid-4{grid-template-columns:1fr;}
+  .duo{grid-template-columns:1fr;}
+  .hints{grid-template-columns:1fr;}
+  .feel-grid{grid-template-columns:1fr;gap:20px;}
+  .feel{padding:22px 20px;}
+  .kpi-extra{grid-template-columns:1fr;}
+  .kpi-row{grid-template-columns:82px 1fr 52px;gap:10px;}
+  .nav-inner{gap:12px;padding:8px 16px;}
+  .brand span{display:none;}
+  .sec-head{margin-bottom:32px;}
+  .hero-points li{padding:12px 16px;font-size:.88rem;}
+  .ring-label{font-size:.72rem;padding:5px 10px;}
+  .ring{max-width:340px;}
+  .timeline-track::before{top:15px;}
+}
+@media (max-width:480px){
+  .wrap{padding:0 16px;}
+  .stats-grid{grid-template-columns:1fr;}
+  .stats-grid .stat:last-child{grid-column:auto;}
+  .stat{padding:16px;}
+}
+
+/* ============ 动效偏好 ============ */
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation:none!important;transition:none!important;}
+  .reveal{opacity:1;transform:none;}
+  html{scroll-behavior:auto;}
+}
+
+/* ============ 打印 ============ */
+@media print{
+  *{animation:none!important;transition:none!important;}
+  body{background:#fff;font-size:11pt;color:#333;}
+  .nav{display:none!important;}
+  .hero{padding-top:20px;background:#fff!important;}
+  .hero::after{display:none;}
+  section{padding:26px 0;break-inside:avoid;}
+  .card,.stat,.mini,.tl,.mode,.planet,.verb,.stab,.kpi-tile{
+    box-shadow:none!important;border:1px solid #e2d8cc;break-inside:avoid;
+  }
+  .reveal{opacity:1!important;transform:none!important;}
+  .bar-fill,.rev-fill{width:var(--w)!important;}
+  .ring::after{display:none;}
+  a{text-decoration:none;color:#333;}
+  .timeline{overflow:visible;}
+  .timeline-track{flex-wrap:wrap;min-width:0;}
+  .tl{width:calc(33.333% - 12px);}
+  .footer{background:#fff;}
+  .hero h1{-webkit-text-fill-color:#58483F!important;color:#58483F!important;background:none!important;}
+  .footer .quote,.footer .quote span{color:#58483F!important;}
+  .ring::before{filter:none;}
+  .mode .value{background:#FBF1EA;}
+  .nav-links{display:none;}
+}
+</style>
+<noscript><style>
+  .reveal{opacity:1!important;transform:none!important;}
+  .bar-fill,.rev-fill{width:var(--w)!important;}
+  .ring::after{animation:none;}
+</style></noscript>
+</head>
+<body>
+
+<!-- ================= 顶部导航 ================= -->
+<nav class="nav">
+  <div class="nav-inner">
+    <div class="brand"><i></i><em></em><span>球球星球 · 蓝图</span></div>
+    <div class="nav-links" id="navLinks">
+      <a href="#top" class="active">概览</a>
+      <a href="#pillars">支柱</a>
+      <a href="#constraints">约束</a>
+      <a href="#bond">光带</a>
+      <a href="#planets">星球</a>
+      <a href="#modes">模式</a>
+      <a href="#loop">循环</a>
+      <a href="#wit">默契×智力</a>
+      <a href="#stability">稳定</a>
+      <a href="#biz">商业</a>
+      <a href="#roadmap">路线</a>
+      <a href="#kpi">KPI</a>
+    </div>
+  </div>
+</nav>
+
+<!-- ================= Hero ================= -->
+<header class="hero" id="top">
+  <div class="wrap">
+    <p class="hero-eyebrow reveal">版本 v1.0 · 玩法蓝图</p>
+
+    <svg class="hero-art reveal" viewBox="0 0 1000 400" role="img" aria-label="暖色光球噗噗与柔色影球嘟嘟，被一条有弹性的缘分光带连接">
+      <defs>
+        <radialGradient id="gPupu" cx="34%" cy="30%" r="78%">
+          <stop offset="0%" stop-color="#FFF0DC"/>
+          <stop offset="42%" stop-color="#FBC9A9"/>
+          <stop offset="100%" stop-color="#EF9C7E"/>
+        </radialGradient>
+        <radialGradient id="gDudu" cx="34%" cy="30%" r="78%">
+          <stop offset="0%" stop-color="#F7FBFF"/>
+          <stop offset="42%" stop-color="#C6D9EA"/>
+          <stop offset="100%" stop-color="#93ADC7"/>
+        </radialGradient>
+        <linearGradient id="gRibbon" x1="0" y1="0" x2="1" y2="0">
+          <stop offset="0%" stop-color="#FBDCC4"/>
+          <stop offset="35%" stop-color="#CFEBDD"/>
+          <stop offset="70%" stop-color="#C8DAEA"/>
+          <stop offset="100%" stop-color="#E3D6F0"/>
+        </linearGradient>
+        <filter id="softGlow" x="-60%" y="-60%" width="220%" height="220%">
+          <feGaussianBlur stdDeviation="14"/>
+        </filter>
+      </defs>
+
+      <!-- 背景柔光斑 -->
+      <ellipse cx="250" cy="150" rx="150" ry="110" fill="#CFEDE1" opacity=".42" filter="url(#softGlow)"/>
+      <ellipse cx="760" cy="160" rx="150" ry="110" fill="#D9E7F3" opacity=".42" filter="url(#softGlow)"/>
+      <ellipse cx="500" cy="200" rx="120" ry="80" fill="#FCE3D3" opacity=".34" filter="url(#softGlow)"/>
+
+      <!-- 光带 -->
+      <path class="ribbon-glow" d="M 358 200 C 432 320, 568 80, 642 200" fill="none"
+            stroke="#F8DFCB" stroke-width="34" stroke-linecap="round"/>
+      <path class="ribbon" d="M 358 200 C 432 320, 568 80, 642 200" fill="none"
+            stroke="url(#gRibbon)" stroke-width="13" stroke-linecap="round"
+            stroke-dasharray="18 14"/>
+      <path d="M 358 200 C 432 320, 568 80, 642 200" fill="none"
+            stroke="#FFFDF8" stroke-width="3.4" stroke-linecap="round" opacity=".85"/>
+
+      <!-- 光带上的小星点 -->
+      <circle class="sparkle" cx="452" cy="278" r="4" fill="#F7C9A8" opacity=".7"/>
+      <circle class="sparkle" cx="512" cy="176" r="3.4" fill="#9FD8C6" opacity=".7" style="animation-delay:-1.2s"/>
+      <circle class="sparkle" cx="566" cy="146" r="4.4" fill="#A9C6DF" opacity=".7" style="animation-delay:-2.4s"/>
+      <circle class="sparkle" cx="392" cy="252" r="3" fill="#C6BBE0" opacity=".6" style="animation-delay:-3.1s"/>
+
+      <!-- 噗噗：暖色光球 -->
+      <g class="ball b1">
+        <circle cx="280" cy="200" r="98" fill="#FFE3CC" opacity=".55" filter="url(#softGlow)"/>
+        <circle cx="280" cy="200" r="80" fill="url(#gPupu)"/>
+        <ellipse cx="252" cy="170" rx="27" ry="17" fill="#FFF6EA" opacity=".8"/>
+        <circle cx="258" cy="196" r="7.6" fill="#6B4E42"/>
+        <circle cx="303" cy="196" r="7.6" fill="#6B4E42"/>
+        <circle cx="255.6" cy="193.6" r="2.6" fill="#FFF8F0"/>
+        <circle cx="300.6" cy="193.6" r="2.6" fill="#FFF8F0"/>
+        <path d="M266 216 Q280 231 295 216" fill="none" stroke="#6B4E42" stroke-width="5" stroke-linecap="round"/>
+        <ellipse cx="240" cy="215" rx="12" ry="7" fill="#F58F72" opacity=".42"/>
+        <ellipse cx="321" cy="215" rx="12" ry="7" fill="#F58F72" opacity=".42"/>
+      </g>
+
+      <!-- 嘟嘟：柔色影球 -->
+      <g class="ball b2">
+        <circle cx="720" cy="200" r="98" fill="#D7E5F2" opacity=".55" filter="url(#softGlow)"/>
+        <circle cx="720" cy="200" r="80" fill="url(#gDudu)"/>
+        <ellipse cx="692" cy="170" rx="26" ry="16" fill="#FFFFFF" opacity=".62"/>
+        <path d="M646 198 q9 -9 18 0" fill="none" stroke="#5B6A7A" stroke-width="4.4" stroke-linecap="round"/>
+        <path d="M666 198 q9 -9 18 0" fill="none" stroke="#5B6A7A" stroke-width="4.4" stroke-linecap="round"/>
+        <path d="M703 215 Q717 226 731 215" fill="none" stroke="#5B6A7A" stroke-width="4.6" stroke-linecap="round"/>
+        <ellipse cx="681" cy="216" rx="11" ry="6.5" fill="#9C8DC2" opacity=".38"/>
+        <ellipse cx="759" cy="216" rx="11" ry="6.5" fill="#9C8DC2" opacity=".38"/>
+      </g>
+
+      <text class="ball-label" x="280" y="328" text-anchor="middle">噗噗 · 光球</text>
+      <text class="ball-sub" x="280" y="352" text-anchor="middle">发光 · 加热 · 点燃 · 显形</text>
+      <text class="ball-label" x="720" y="328" text-anchor="middle">嘟嘟 · 影球</text>
+      <text class="ball-sub" x="720" y="352" text-anchor="middle">隐身 · 穿墙 · 加重 · 吸声</text>
+      <text class="ball-sub" x="500" y="96" text-anchor="middle" style="letter-spacing:.2em;">缘分光带 · Bond Ribbon</text>
+    </svg>
+
+    <h1 class="reveal">球球星球</h1>
+    <p class="hero-sub reveal">两颗球球，一根光带，一起滚过一颗会呼吸的小星球。</p>
+
+    <ul class="hero-points reveal-group">
+      <li class="reveal"><i class="pt"></i><p><b>一根带子，百种玩法</b>　物理光带 + 6 颗性格迥异的小星球，同一套操作在每颗星球上都是新游戏。</p></li>
+      <li class="reveal"><i class="pt"></i><p><b>不比较、不淘汰、不吵架</b>　合奏式计分、抱抱复活、隐形动态难度，手残也能被温柔托住。</p></li>
+      <li class="reveal"><i class="pt"></i><p><b>从屏幕陪你到桌面</b>　与《球球桌面宠物》账号互通，你的桌宠就是星球向导。</p></li>
+    </ul>
+
+    <div class="hero-tags reveal">
+      <span>双人协作 × 派对联机 × 治愈养成</span>
+      <span>iOS / Android / PC 跨端互通</span>
+      <span>2 人核心 · 4–8 人派对</span>
+      <span>单局 3–15 分钟</span>
+      <span>情侣 · 异地恋 · 闺蜜 死党</span>
+    </div>
+  </div>
+</header>
+
+<!-- ================= 数据条 ================= -->
+<div class="stats">
+  <div class="wrap">
+    <div class="stats-grid reveal-group">
+      <div class="stat reveal"><b>6</b><span>颗小星球</span></div>
+      <div class="stat reveal"><b>48</b><span>个主线关卡</span></div>
+      <div class="stat reveal"><b>20</b><span>个迷你游戏</span></div>
+      <div class="stat reveal"><b>7</b><span>大玩法模式</span></div>
+      <div class="stat reveal"><b>2–8</b><span>人同玩</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- ================= 01 设计四支柱 ================= -->
+<section id="pillars">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <span class="kicker">01 · 设计支柱</span>
+      <h2>四条检验，不过就砍</h2>
+      <p class="sec-sub">每个设计决策都必须通过这四条检验，任何一条不过就砍。</p>
+    </div>
+    <div class="grid-4 reveal-group">
+      <article class="card lift pillar reveal">
+        <div class="pnum">P1</div>
+        <h3>一根带子，千种动作</h3>
+        <p>不做"新关卡 = 新机关"的堆料：7 个光带动词 × 6 种星球规则 = 42 种组合，每颗星球只引入 1 条新规则，玩家自己发现玩法。</p>
+        <div class="check"><b>检验：</b>这个新内容是否复用并深化了光带？如果只是"跳得更高"，砍掉。</div>
+      </article>
+      <article class="card lift pillar reveal">
+        <div class="pnum">P2</div>
+        <h3>一起赢，不互输</h3>
+        <p>没有 PvP 排行榜、没有淘汰、没有扣分；失败 = 星球打了个喷嚏，重来不加惩罚；所有分数都是"我们"的。</p>
+        <div class="check"><b>检验：</b>这个机制会不会让一方觉得"是我害的"？会，就改。</div>
+      </article>
+      <article class="card lift pillar reveal">
+        <div class="pnum">P3</div>
+        <h3>每天 10 分钟也有进展</h3>
+        <p>同步玩主线与派对；异步玩家园、漂流心事、留言。不能要求两个人同时在线——TA 今晚加班，一个人上线也有事做。</p>
+        <div class="check"><b>检验：</b>一个人上线能做什么？必须有答案。</div>
+      </article>
+      <article class="card lift pillar reveal">
+        <div class="pnum">P4</div>
+        <h3>情绪可见，关系即界面</h3>
+        <p>光带的颜色、张力、振动频率 = 你们的默契与心情；家园的天气 = TA 今天的心情。玩家一眼就能看出"我们最近怎么样"。</p>
+        <div class="check"><b>检验：</b>玩家能不能一眼看出"我们最近怎么样"？</div>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- ================= 02 硬约束与手感 ================= -->
+<section id="constraints">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <span class="kicker s">02 · 六条硬约束</span>
+      <h2>每一条，都有可量化的验收值</h2>
+      <p class="sec-sub">稳定 · 创新 · 可爱温馨 · 可玩性好 · 考验配合与默契 · 考验智力：用户提出的六条硬要求，逐条对应到具体设计，不是口号。</p>
+    </div>
+    <div class="hard6 reveal-group">
+      <article class="card lift hard reveal">
+        <div class="hard-top"><span class="hi">稳</span><h3>稳定</h3></div>
+        <p class="resp">服务端权威 + 定点数物理 + 回滚 + 弱网降级 + 灰度回滚，先保证"不崩、不掉、不丢进度"。</p>
+        <p class="metric"><b>验收</b>可用性 99.9% · 崩溃率 &lt; 0.3% · 150ms / 5% 丢包可通关 · 断线 8 秒恢复</p>
+      </article>
+      <article class="card lift hard reveal">
+        <div class="hard-top"><span class="hi">新</span><h3>创新</h3></div>
+        <p class="resp">光带 = 两人共用的一只手、非对称信息密室、情绪天气、双人共享季票、桌宠双端联动。</p>
+        <p class="metric"><b>验收</b>至少 3 个机制在同类产品中<span class="hl">没有先例</span>，且都长在可玩模块里</p>
+      </article>
+      <article class="card lift hard reveal">
+        <div class="hard-top"><span class="hi">萌</span><h3>可爱温馨</h3></div>
+        <p class="resp">软陶 / 毛毡质感、圆润无尖角、低饱和治愈色、八音盒音阶，失败文案是"星球打了个喷嚏"。</p>
+        <p class="metric"><b>验收</b>美术评审 0 处尖锐 / 阴森 / 血腥元素 · 玩家测试"温暖"词频 &gt; "刺激"</p>
+      </article>
+      <article class="card lift hard reveal">
+        <div class="hard-top"><span class="hi">玩</span><h3>可玩性好</h3></div>
+        <p class="resp">3 秒一个反馈、7 个动词即学即用、每关 8–12 分钟、输入响应 &lt; 100ms。</p>
+        <p class="metric"><b>验收</b>首关完成率 &gt; 90% · 平均单次会话 22 分钟 · 差评中"不好玩"占比 &lt; 5%</p>
+      </article>
+      <article class="card lift hard reveal">
+        <div class="hard-top"><span class="hi">契</span><h3>考验配合与默契</h3></div>
+        <p class="resp">操作 / 信息 / 决策三层默契 + 300ms 宽容窗 + 每局生成"默契诊断报告"。</p>
+        <p class="metric"><b>验收</b>双人同步率随游玩时长上升 · 默契报告分享率 &gt; 15%</p>
+      </article>
+      <article class="card lift hard reveal">
+        <div class="hard-top"><span class="hi">智</span><h3>考验智力</h3></div>
+        <p class="resp">四类谜题语法（观察 / 推理 / 空间 / 博弈）+ 三原则 + 三层提示 + 双轴难度。</p>
+        <p class="metric"><b>验收</b>90% 关卡在 3 次提示内通过 · 不用提示通关者 &gt; 60%</p>
+      </article>
+    </div>
+    <p class="note reveal">总原则：稳定是地基，创新是记忆点，可爱是皮肤，可玩性是骨肉，默契与智力是灵魂。<b>任何一条不达标，其他做得再好也不算成功。</b></p>
+
+    <div class="card feel reveal">
+      <h3>可玩性：手感 · 节奏 · 反馈</h3>
+      <p class="feel-sub">"好玩"不是玄学，是三件可以被设计、也可以被测量的事。</p>
+      <div class="feel-grid">
+        <div>
+          <h4>反馈节奏：每 3 秒都有回应</h4>
+          <div class="feed">
+            <div class="feed-item"><b>3 秒</b><span>光带振动、球体挤压拉伸（squash &amp; stretch）、音效"啵"</span></div>
+            <div class="feed-item"><b>30 秒</b><span>星星碎片飞入、连击数字、"干得漂亮"气泡</span></div>
+            <div class="feed-item"><b>3 分钟</b><span>过关演出、双人拥抱动画、星尘结算</span></div>
+            <div class="feed-item"><b>一局</b><span>星球亮起一块颜色、"回忆卡"生成</span></div>
+          </div>
+        </div>
+        <div>
+          <h4>手感三原则</h4>
+          <ul class="dots">
+            <li><b>零延迟感</b>：输入到画面反馈 &lt; 100ms，球体"贴着手指"走</li>
+            <li><b>宽容</b>：吸附范围 +20%、同步窗口 300ms、坠落 0.15 秒拉回缓冲</li>
+            <li><b>可预期</b>：弹性、断点、缠绕规则始终一致，玩家 3 关内理解物理</li>
+          </ul>
+          <h4 style="margin-top:16px;">四个爽点（Juice）</h4>
+          <div class="juice">
+            <span>弹弓蓄力定格</span><span>共振灯光闪一次</span><span>抱抱粉色光圈</span><span>断带皮筋弹回</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= 03 缘分光带 ================= -->
+<section id="bond">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <span class="kicker p">03 · 核心机制</span>
+      <h2>缘分光带：共享的一只手</h2>
+      <p class="sec-sub">它既是你们唯一的"手脚"——弹弓、摆荡、缠绕、拉拽、共振；也是你们唯一的"距离"——拉太远会疼，贴太近会绊倒。</p>
+    </div>
+
+    <!-- 光带示意图 -->
+    <svg class="bond-art reveal" viewBox="0 0 900 250" role="img" aria-label="光带物理示意：静止长度 2.5 个球径，最大拉伸 1.8 倍，断带阈值 3 倍">
+      <defs>
+        <radialGradient id="bP" cx="34%" cy="30%" r="78%">
+          <stop offset="0%" stop-color="#FFF0DC"/><stop offset="55%" stop-color="#FBC9A9"/><stop offset="100%" stop-color="#EF9C7E"/>
+        </radialGradient>
+        <radialGradient id="bD" cx="34%" cy="30%" r="78%">
+          <stop offset="0%" stop-color="#F7FBFF"/><stop offset="55%" stop-color="#C6D9EA"/><stop offset="100%" stop-color="#93ADC7"/>
+        </radialGradient>
+        <linearGradient id="bR" x1="0" y1="0" x2="1" y2="0">
+          <stop offset="0%" stop-color="#FBDCC4"/><stop offset="50%" stop-color="#CFEBDD"/><stop offset="100%" stop-color="#C8DAEA"/>
+        </linearGradient>
+      </defs>
+      <!-- 尺寸参考线 -->
+      <line x1="160" y1="196" x2="740" y2="196" stroke="#DFCDBA" stroke-width="1.6" stroke-dasharray="6 7"/>
+      <line x1="160" y1="188" x2="160" y2="204" stroke="#DFCDBA" stroke-width="1.6"/>
+      <line x1="740" y1="188" x2="740" y2="204" stroke="#DFCDBA" stroke-width="1.6"/>
+      <text x="450" y="222" text-anchor="middle" font-size="13" fill="#A99B8E" letter-spacing="2">静止长度 L0 = 2.5 个球径</text>
+      <text x="450" y="34" text-anchor="middle" font-size="13" fill="#A99B8E" letter-spacing="2">8 Hz 振动基准 · 共振玩法的输入节奏</text>
+
+      <path d="M 208 120 C 300 190, 600 50, 692 120" fill="none" stroke="#F8DFCB" stroke-width="28" stroke-linecap="round" opacity=".65"/>
+      <path class="ribbon" d="M 208 120 C 300 190, 600 50, 692 120" fill="none" stroke="url(#bR)" stroke-width="11" stroke-linecap="round" stroke-dasharray="16 16"/>
+      <path d="M 208 120 C 300 190, 600 50, 692 120" fill="none" stroke="#FFFDF8" stroke-width="3" stroke-linecap="round" opacity=".85"/>
+
+      <g class="ball">
+        <circle cx="160" cy="120" r="48" fill="url(#bP)"/>
+        <ellipse cx="143" cy="102" rx="16" ry="10" fill="#FFF7EC" opacity=".8"/>
+        <circle cx="147" cy="118" r="4.6" fill="#6B4E42"/><circle cx="173" cy="118" r="4.6" fill="#6B4E42"/>
+        <path d="M152 133 Q160 142 168 133" fill="none" stroke="#6B4E42" stroke-width="3.4" stroke-linecap="round"/>
+      </g>
+      <g class="ball b2">
+        <circle cx="740" cy="120" r="48" fill="url(#bD)"/>
+        <ellipse cx="723" cy="102" rx="15" ry="9" fill="#FFFFFF" opacity=".6"/>
+        <path d="M700 116 q6 -6 12 0" fill="none" stroke="#5B6A7A" stroke-width="3" stroke-linecap="round"/>
+        <path d="M712 116 q6 -6 12 0" fill="none" stroke="#5B6A7A" stroke-width="3" stroke-linecap="round"/>
+        <path d="M726 130 Q734 137 742 130" fill="none" stroke="#5B6A7A" stroke-width="3" stroke-linecap="round"/>
+      </g>
+      <text x="160" y="76" text-anchor="middle" font-size="14" font-weight="700" fill="#8A6E58" letter-spacing="2">噗噗</text>
+      <text x="740" y="76" text-anchor="middle" font-size="14" font-weight="700" fill="#63798D" letter-spacing="2">嘟嘟</text>
+    </svg>
+
+    <!-- 光带参数 -->
+    <div class="bond-chips reveal-group">
+      <div class="bond-chip reveal"><b>弹性系数 k 中 · 阻尼 c 高</b><span>弹弓有爽感，触屏不抖手</span></div>
+      <div class="bond-chip reveal"><b>最大拉伸 1.8 × L0</b><span>超过就"发烫"提示：不扣血，只减速</span></div>
+      <div class="bond-chip reveal"><b>断带 3.0 × L0</b><span>断带后 2 秒自动修复，永不永久失去</span></div>
+    </div>
+
+    <p class="note reveal">设计原则：光带是"共享资源"，不是"惩罚工具"。任何时候都不允许用带子把队友拽下悬崖——物理系统会把它软化成"弹一下"。</p>
+
+    <!-- 七个动词 -->
+    <div class="auto-grid verbs reveal-group" style="margin-top:38px;">
+      <article class="card lift verb reveal">
+        <div class="no">1</div>
+        <h3>弹弓</h3>
+        <p class="op">一人定住当锚，另一人反向拉满后松手。</p>
+        <p class="use"><b>用法</b>把队友射过深渊；把重物弹上高台。</p>
+        <p class="use" style="border:none;padding-top:6px;color:var(--ink-3);"><b style="color:var(--ink-3);">解锁</b>序章</p>
+      </article>
+      <article class="card lift verb reveal">
+        <div class="no">2</div>
+        <h3>摆荡</h3>
+        <p class="op">带子挂上钩点，像钟摆一样荡过去。</p>
+        <p class="use"><b>用法</b>跨越裂谷、躲激光、荡进隐藏区。</p>
+        <p class="use" style="border:none;padding-top:6px;color:var(--ink-3);"><b style="color:var(--ink-3);">解锁</b>第 1 章</p>
+      </article>
+      <article class="card lift verb reveal">
+        <div class="no">3</div>
+        <h3>缠绕</h3>
+        <p class="op">绕住物体转圈，把带子卷起来。</p>
+        <p class="use"><b>用法</b>拉倒石柱、转阀门、绑住星兽。</p>
+        <p class="use" style="border:none;padding-top:6px;color:var(--ink-3);"><b style="color:var(--ink-3);">解锁</b>第 1 章</p>
+      </article>
+      <article class="card lift verb reveal">
+        <div class="no">4</div>
+        <h3>拉拽</h3>
+        <p class="op">向反方向走，互相拖。</p>
+        <p class="use"><b>用法</b>拉队友出流沙；一人压住机关，让另一人通过。</p>
+        <p class="use" style="border:none;padding-top:6px;color:var(--ink-3);"><b style="color:var(--ink-3);">解锁</b>序章</p>
+      </article>
+      <article class="card lift verb reveal">
+        <div class="no">5</div>
+        <h3>共振</h3>
+        <p class="op">两人按同一节拍点按。</p>
+        <p class="use"><b>用法</b>震碎水晶、唤醒石像、打开音律门。</p>
+        <p class="use" style="border:none;padding-top:6px;color:var(--ink-3);"><b style="color:var(--ink-3);">解锁</b>第 2 章</p>
+      </article>
+      <article class="card lift verb reveal">
+        <div class="no">6</div>
+        <h3>收放</h3>
+        <p class="op">共享的"带长"资源条，可主动伸长 / 收短。</p>
+        <p class="use"><b>用法</b>钻进窄缝要放长；过桥要收短防摔。</p>
+        <p class="use" style="border:none;padding-top:6px;color:var(--ink-3);"><b style="color:var(--ink-3);">解锁</b>第 3 章</p>
+      </article>
+      <article class="card lift verb reveal">
+        <div class="no">7</div>
+        <h3>打结</h3>
+        <p class="op">把带子系在锚点上，形成滑索 / 蹦床 / 固定点。</p>
+        <p class="use"><b>用法</b>造桥、造弹射器、系住星兽。</p>
+        <p class="use" style="border:none;padding-top:6px;color:var(--ink-3);"><b style="color:var(--ink-3);">解锁</b>第 4 章</p>
+      </article>
+    </div>
+
+    <div class="combo reveal">
+      <span class="tag">弹弓 + 打结 = 弹射器</span>
+      <span class="tag">摆荡 + 收放 = 空中变速</span>
+      <span class="tag">共振 + 缠绕 = 声波钻头</span>
+      <span class="tag">组合不写进教程，留给玩家发现</span>
+    </div>
+
+    <!-- 双球能力 + 合奏技 -->
+    <div class="duo reveal-group">
+      <div class="duo-card pupu lift reveal">
+        <h4>噗噗 · 光球</h4>
+        <p>暖、直球、爱发光，能把黑暗照亮，能把东西加热、点燃、显形。</p>
+        <div class="abilities"><span>发光</span><span>加热</span><span>点燃</span><span>显形</span><span>照亮暗门</span><span>烧断藤蔓</span></div>
+      </div>
+      <div class="duo-card dudu lift reveal">
+        <h4>嘟嘟 · 影球</h4>
+        <p>软、慢热、会隐身，能穿墙、加重、吸收声音与光线。</p>
+        <div class="abilities"><span>隐身</span><span>穿墙</span><span>加重</span><span>吸声</span><span>穿过铁栅</span><span>压下重板</span></div>
+      </div>
+    </div>
+    <p class="note reveal">互补关：嘟嘟穿墙进去开灯，噗噗才能看清路；噗噗点燃火把，嘟嘟才能借阴影穿过。两球能力每月轮换可自定义——避免"我永远只能玩辅助"的固定角色感。</p>
+
+    <div class="combo reveal" style="margin-top:22px;">
+      <span class="tag">合奏技 · 心之弹弓：两人合成一颗大球，拉满后一起飞出去</span>
+      <span class="tag">合奏技 · 星河共鸣：全屏时间放缓 3 秒，两人同步点按</span>
+      <span class="tag">合奏技 · 抱抱结界：抱成一团，免疫一次伤害</span>
+    </div>
+  </div>
+</section>
+
+<!-- ================= 04 六颗星球 ================= -->
+<section id="planets">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <span class="kicker h">04 · 星球规则改造器</span>
+      <h2>每颗星球只加 1 条规则</h2>
+      <p class="sec-sub">但会重新定义光带的用法——玩家学会的是"原理"，不是"关卡答案"。</p>
+    </div>
+    <div class="auto-grid planets reveal-group">
+      <article class="card lift planet reveal">
+        <div class="orb"></div>
+        <div>
+          <h3>薄荷草原</h3>
+          <p class="rule">正常重力</p>
+          <p>教学星球：学四个基础动词（弹弓、拉拽、摆荡、缠绕），把"带子会疼"教成直觉。</p>
+        </div>
+      </article>
+      <article class="card lift planet reveal">
+        <div class="orb o2"></div>
+        <div>
+          <h3>棉花糖云海</h3>
+          <p class="rule">低重力 + 上升气流</p>
+          <p>摆荡变成"放风筝"，带子会飘；距离感变松，落点要多算半拍。</p>
+        </div>
+      </article>
+      <article class="card lift planet reveal">
+        <div class="orb o3"></div>
+        <div>
+          <h3>布丁深海</h3>
+          <p class="rule">浮力 + 水流</p>
+          <p>光带变成"缆绳"，可拖拽、可收线；水流会推着带子走，收放是关键。</p>
+        </div>
+      </article>
+      <article class="card lift planet reveal">
+        <div class="orb o4"></div>
+        <div>
+          <h3>铁锈磁原</h3>
+          <p class="rule">磁力</p>
+          <p>带子会被磁化，可吊起金属，也会被吸住；一根带子同时是工具和负担。</p>
+        </div>
+      </article>
+      <article class="card lift planet reveal">
+        <div class="orb o5"></div>
+        <div>
+          <h3>回声洞穴</h3>
+          <p class="rule">声音实体化</p>
+          <p>共振是唯一解；安静才能显形——两个人的"静音默契"第一次被考验。</p>
+        </div>
+      </article>
+      <article class="card lift planet reveal">
+        <div class="orb o6"></div>
+        <div>
+          <h3>时间沙漏</h3>
+          <p class="rule">局部时间回溯</p>
+          <p>一个人回溯、一个人继续，必须错位配合；你们要接受"不在同一个现在"。</p>
+        </div>
+      </article>
+    </div>
+    <p class="note reveal">6 颗星球 = 6 倍玩法，而美术 / 教学成本只有 1 份。这就是"机制正交组合"，不是关卡堆砌。</p>
+  </div>
+</section>
+
+<!-- ================= 05 七大模式 ================= -->
+<section id="modes">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <span class="kicker l">05 · 玩法矩阵</span>
+      <h2>七大模式，四种节奏</h2>
+      <p class="sec-sub">"玩法多样"不是数量堆砌，而是长线 · 短平快 · 每日 · 长期的组合。</p>
+    </div>
+    <div class="rhythm-note reveal">
+      <span>长线 · 主线</span>
+      <span>短平快 · 派对</span>
+      <span>每日 · 密室 / 心事</span>
+      <span>长期 · 家园 / UGC</span>
+    </div>
+
+    <div class="auto-grid modes reveal-group">
+      <article class="card lift mode reveal">
+        <div class="mno">①</div>
+        <h3>星旅（主线）</h3>
+        <div class="meta"><span>1–2 人</span><span>8–12 min / 关</span><span>每周 2–4 次</span></div>
+        <p class="fun">物理协作解谜 + 情绪叙事。每关 1 个核心谜题 + 2 个轻量躲避 + 1 段无对话叙事。</p>
+        <p class="value">我们一起通关了</p>
+        <p class="launch"><b>首发</b>6 星球 × 8 关 = 48 关</p>
+      </article>
+      <article class="card lift mode reveal">
+        <div class="mno">②</div>
+        <h3>星环派对</h3>
+        <div class="meta"><span>2–8 人</span><span>4–6 min / 局</span><span>随时</span></div>
+        <p class="fun">6 轮随机迷你游戏，每轮 45 秒，结束颁"最默契搭档""最搞笑瞬间"。不做淘汰。</p>
+        <p class="value">热闹、笑场、录屏</p>
+        <p class="launch"><b>首发</b>20 个迷你游戏</p>
+      </article>
+      <article class="card lift mode reveal">
+        <div class="mno">③</div>
+        <h3>共振密室</h3>
+        <div class="meta"><span>2 人</span><span>5–8 min</span><span>每日 1 间 + 周更 3 间</span></div>
+        <p class="fun">非对称信息：两人看到的房间不一样（噗噗看颜色形状，嘟嘟看声音影子），必须用嘴描述才能解。</p>
+        <p class="value">异地连麦最佳载体</p>
+        <p class="launch"><b>首发</b>60 间 / 季 · 每日 1 间永久免费</p>
+      </article>
+      <article class="card lift mode reveal">
+        <div class="mno">④</div>
+        <h3>小行星窝</h3>
+        <div class="meta"><span>1–2 人（异步可单）</span><span>3–10 min</span><span>每日</span></div>
+        <p class="fun">共享家园：种植 → 收获 → 做料理家具 → 装饰 → 吸引流浪小星兽。各自有"自己的角落"，也有"我们的客厅"。</p>
+        <p class="value">我们的家</p>
+        <p class="launch"><b>首发</b>300+ 家具</p>
+      </article>
+      <article class="card lift mode reveal">
+        <div class="mno">⑤</div>
+        <h3>漂流心事</h3>
+        <div class="meta"><span>1–2 人（异步）</span><span>1 min</span><span>每日</span></div>
+        <p class="fun">每日一问（答完才能看对方的）、情绪天气、30 秒语音信、自动剪辑回忆册。</p>
+        <p class="value">把游戏变成聊天开头</p>
+        <p class="launch"><b>首发</b>365 问 / 年</p>
+      </article>
+      <article class="card lift mode reveal">
+        <div class="mno">⑥</div>
+        <h3>星球工坊</h3>
+        <div class="meta"><span>1–8 人</span><span>自由</span><span>每周</span></div>
+        <p class="fun">拖拽式编辑器：模块化地形 + 机关 + 光带锚点，一键测试、一键发布，6 位分享码 + 二维码。</p>
+        <p class="value">UGC、二创传播</p>
+        <p class="launch"><b>首发</b>编辑器 + 每周精选池</p>
+      </article>
+      <article class="card lift mode reveal">
+        <div class="mno">⑦</div>
+        <h3>流星季</h3>
+        <div class="meta"><span>2–8 人</span><span>8–12 min</span><span>每季 6 周</span></div>
+        <p class="fun">新星球"流星带"限时开放；星兽 Raid 围绕光带机制；通行证双人共享一张。</p>
+        <p class="value">一起打 BOSS、拿限定</p>
+        <p class="launch"><b>首发</b>每季 1 张新图 + 3 个活动</p>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- ================= 06 核心循环 ================= -->
+<section id="loop">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <span class="kicker">06 · 核心循环</span>
+      <h2>四条节奏，一起转起来</h2>
+      <p class="sec-sub">分钟给爽感、日给习惯、周给目标、赛季给仪式。</p>
+    </div>
+    <div class="loop-wrap">
+      <div class="ring reveal" aria-hidden="true">
+        <div class="ring-center">
+          <b>核心循环</b>
+          <span>分钟 · 日 · 周 · 赛季</span>
+          <i></i>
+        </div>
+        <span class="ring-label rl1">分钟</span>
+        <span class="ring-label rl2">日</span>
+        <span class="ring-label rl3">周</span>
+        <span class="ring-label rl4">赛季</span>
+      </div>
+      <div class="loops reveal-group">
+        <div class="loop-item reveal">
+          <h4>分钟循环</h4>
+          <p>滚 → 用光带解一个谜 → <b>抱一下</b>（复活 / 庆祝）→ 收获星尘与回忆碎片 → 再来一关</p>
+        </div>
+        <div class="loop-item reveal">
+          <h4>日循环</h4>
+          <p>上线 → 家园收菜 / 喂宠 → 每日一问 / 情绪打卡 → 共振密室 1 间 → <b>光带修行 3 分钟</b> → 下线</p>
+        </div>
+        <div class="loop-item reveal">
+          <h4>周循环</h4>
+          <p>主线推进 2–4 关 → 派对 2 局 → 工坊玩 3 个自制关 → <b>周末星兽 Raid</b></p>
+        </div>
+        <div class="loop-item reveal">
+          <h4>赛季循环</h4>
+          <p>6 周：新星球 → 新通行证 → 新家具 → <b>赛季末"流星雨"合影活动</b></p>
+        </div>
+      </div>
+    </div>
+    <p class="note reveal">四条成长线并行，避免单一数值焦虑：关系线（默契等级 1–50）· 玩法线（星球徽章）· 收集线（回忆碎片 / 家具 / 皮肤）· 技巧线（光带修行，纯技巧不产出数值）。<br><b>不做</b>：战力、装备强化、抽卡——数值不参与任何玩法门槛。</p>
+  </div>
+</section>
+
+<!-- ================= 07 默契 × 智力 ================= -->
+<section id="wit">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <span class="kicker p">07 · 考验 ≠ 折磨</span>
+      <h2>默契三层 × 智力四类</h2>
+      <p class="sec-sub">分层考验 + 三层提示 + 双轴难度：考得住配合与脑子，却劝不退手残。</p>
+    </div>
+
+    <div class="split">
+      <div class="reveal">
+        <div class="split-head">
+          <span class="dotmark"></span>
+          <h3>默契的三层考验</h3>
+          <small>手感 · 沟通 · 信任</small>
+        </div>
+        <div class="stack reveal-group">
+          <div class="mini reveal">
+            <h4>操作默契<em>手感层</em></h4>
+            <p>考验节奏同频。共振门：两人按同一节拍点按；同步跳；双人 QTE。</p>
+            <span class="tol">容错 300ms 窗口，节拍有视觉 / 听觉双提示</span>
+          </div>
+          <div class="mini reveal">
+            <h4>信息默契<em>沟通层</em></h4>
+            <p>考验"能不能说清楚"。共振密室：两人看到不同房间，必须口述。</p>
+            <span class="tol">容错：无时间压力，可无限讨论</span>
+          </div>
+          <div class="mini reveal">
+            <h4>决策默契<em>信任层</em></h4>
+            <p>考验"敢不敢交给对方"。分岔路：一人先走、一人留在线那头；"你拉我，我闭眼"的盲跳关。</p>
+            <span class="tol">容错：失败立即拉回，不惩罚</span>
+          </div>
+        </div>
+        <p class="note reveal" style="margin-top:16px;text-align:left;">每局结束生成<b>默契诊断</b>：同步率、平均反应差、谁承担了信息描述、谁救了谁——可分享的社交货币，也是"我们越来越默契"的可视化证明。</p>
+      </div>
+
+      <div class="reveal">
+        <div class="split-head">
+          <span class="dotmark p"></span>
+          <h3>智力的四类谜题</h3>
+          <small>观察 · 推理 · 空间 · 取舍</small>
+        </div>
+        <div class="stack reveal-group">
+          <div class="mini reveal">
+            <h4>观察<em class="pc">环境阅读</em></h4>
+            <p>墙角有 3 个钩子，只有 1 个能承重——材质与裂纹会暗示答案。</p>
+          </div>
+          <div class="mini reveal">
+            <h4>推理<em class="pc">因果链</em></h4>
+            <p>两个机关必须同时按下，但只有一条带子 → 必须用"打结"造第二条支点。</p>
+          </div>
+          <div class="mini reveal">
+            <h4>空间<em class="pc">空间想象</em></h4>
+            <p>摆荡角度 + 收放带长，算出落点。</p>
+          </div>
+          <div class="mini reveal">
+            <h4>博弈 / 取舍<em class="pc">决策分工</em></h4>
+            <p>带子只能救一个人上高台，另一人必须走水下路线。</p>
+          </div>
+        </div>
+        <div class="mini reveal" style="margin-top:12px;background:linear-gradient(150deg,#FFFDFA,#F6FBF8);">
+          <h4>谜题三原则</h4>
+          <p>① <b>不靠猜</b>：答案都能从颜色、声音、材质、光影里读出来。<br>② <b>不靠手速</b>：思考题不含操作压力，操作题不含思考陷阱。<br>③ <b>不唯一解</b>：至少 2 种解法，鼓励"你们自己想出来的"。</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="hints reveal-group">
+      <div class="hint-card reveal">
+        <b>① 环境暗示（免费）</b>
+        <span>卡 60 秒后，环境开始"呼吸"：目标物发光、音乐变调。</span>
+      </div>
+      <div class="hint-card reveal">
+        <b>② 伙伴提示（免费）</b>
+        <span>AI 球球 / 回声精灵给方向性提示："也许该有人留在上面"。</span>
+      </div>
+      <div class="hint-card reveal">
+        <b>③ 星尘提示</b>
+        <span>每日 3 次免费，只给"下一步动作"，不给完整答案。</span>
+      </div>
+    </div>
+    <p class="note reveal">数据目标：<b>90% 的关卡在 3 次提示内通过</b>，且<b>不使用提示的玩家占比 &gt; 60%</b>。双轴难度可分开调：操作轻松 × 思考硬核——这是情侣技能差的最优解；难度对奖励零影响。</p>
+  </div>
+</section>
+
+<!-- ================= 08 稳定性 ================= -->
+<section id="stability">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <span class="kicker h">08 · 稳定性工程</span>
+      <h2>不因为"技术问题"而吵架</h2>
+      <p class="sec-sub">物理联机游戏最大的风险不是不好玩，是不稳。</p>
+    </div>
+    <div class="auto-grid stability reveal-group">
+      <div class="card lift stab reveal"><b>99.9<small>%</small></b><span>服务可用性</span><em>月度口径</em></div>
+      <div class="card lift stab reveal"><b>&lt; 0.3<small>%</small></b><span>崩溃率</span><em>每会话</em></div>
+      <div class="card lift stab reveal"><b>&gt; 98<small>%</small></b><span>联机成功率</span><em>NAT 失败自动中继</em></div>
+      <div class="card lift stab reveal"><b>&lt; 8<small>秒</small></b><span>断线重连</span><em>进度零丢失</em></div>
+      <div class="card lift stab reveal"><b>150<small>ms</small></b><span>弱网可玩</span><em>5% 丢包下正常通关</em></div>
+      <div class="card lift stab reveal"><b>30<small>fps</small></b><span>中端机稳定</span><em>骁龙 7 系 / A13</em></div>
+      <div class="card lift stab reveal"><b>&lt; 200<small>MB</small></b><span>首包体积</span><em>其余按星球分包</em></div>
+      <div class="card lift stab reveal"><b>&lt; 4<small>秒</small></b><span>冷启动进主界面</span><em>中端机</em></div>
+    </div>
+    <div class="arch reveal-group">
+      <div class="reveal"><b>服务端权威 + 定点数物理</b>30Hz 固定步长确定性模拟，客户端预测 + 服务器校正 + 插值。</div>
+      <div class="reveal"><b>双人优先 + 回滚</b>主线 / 密室 2 人房用轻量确定性 + 回滚（上限 8 帧）；派对 8 人简化物理。</div>
+      <div class="reveal"><b>主机迁移 3 秒</b>房主掉线无缝迁移，光带状态由服务器快照恢复。</div>
+      <div class="reveal"><b>优雅降级</b>弱网自动降快照频率、关粒子、简化光带细分——<b>卡但不崩</b>。</div>
+      <div class="reveal"><b>全球 5 区部署</b>华东 / 华南 / 新加坡 / 法兰克福 / 弗吉尼亚，按最低延迟开房，跨区中继。</div>
+      <div class="reveal"><b>质量保障</b>50 个光带经典场景回归回放、每日机器人双人通关、弱网实验室、50 对情侣封闭测试。</div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= 09 商业化 ================= -->
+<section id="biz">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <span class="kicker s">09 · 商业化与伦理</span>
+      <h2>卖外观，不卖数值</h2>
+      <p class="sec-sub">把两个人当"一对"，而不是两个钱包。</p>
+    </div>
+
+    <div class="biz">
+      <div class="card reveal">
+        <div class="money">
+          <div class="coin"><b>星尘（软）</b><span>玩、任务、家园产出 → 家具、装饰、提示、皮肤碎片</span></div>
+          <div class="coin b"><b>星愿（硬）</b><span>充值 → 限定外观、通行证、礼包</span></div>
+        </div>
+        <div class="price-list">
+          <div class="price-row"><span>赛季通行证（<b>双人共享</b>，含 2 套外观 + 家具）</span><b>¥30 / 季</b></div>
+          <div class="price-row"><span>皮肤 / 家具包（纯外观）</span><b>¥6 / ¥18 / ¥30</b></div>
+          <div class="price-row"><span>情侣礼包（双人外观 + 家园摆件）</span><b>¥68 / ¥128</b></div>
+          <div class="price-row"><span>回忆册实体打印（线上 → 实体相册）</span><b>¥49 起</b></div>
+          <div class="price-row"><span>首充 / 成长基金</span><b>¥6 / ¥30</b></div>
+        </div>
+        <div class="revenue reveal">
+          <div class="rev-row"><span>外观 / 家具</span><div class="rev-track"><i class="rev-fill" style="--w:40%"></i></div><span>40%</span></div>
+          <div class="rev-row"><span>赛季通行证</span><div class="rev-track"><i class="rev-fill" style="--w:30%"></i></div><span>30%</span></div>
+          <div class="rev-row"><span>礼包 / 节日</span><div class="rev-track"><i class="rev-fill" style="--w:20%"></i></div><span>20%</span></div>
+          <div class="rev-row"><span>实体 / 联名</span><div class="rev-track"><i class="rev-fill" style="--w:10%"></i></div><span>10%</span></div>
+        </div>
+        <p class="note reveal" style="margin-top:18px;font-size:.78rem;">成熟期收入结构预估</p>
+      </div>
+
+      <div class="card reveal">
+        <h3 style="font-size:1rem;letter-spacing:.1em;margin-bottom:14px;color:var(--peach-deep);">伦理红线</h3>
+        <ul class="ethics reveal-group">
+          <li class="reveal"><p><b>无抽卡、无概率道具</b>，尤其不对未成年人开放。</p></li>
+          <li class="reveal"><p><b>不卖数值、不卖战力</b>，付费不改变任何玩法难度。</p></li>
+          <li class="reveal"><p><b>不做焦虑营销</b>：不定"限时错过就永远没有"，限定外观一年内以其他方式返场。</p></li>
+          <li class="reveal"><p><b>情侣付费双方可见</b>：共享通行证 = 一个人买两人用，而不是"给 TA 买"的暗示。</p></li>
+        </ul>
+        <p class="note reveal" style="margin-top:16px;text-align:left;">情绪数据只对绑定对象可见，可随时关闭；不做"TA 心情不好你要负责"的 guilt 设计；不做好友排行榜，也不做情侣默契排行榜。</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= 10 路线图 ================= -->
+<section id="roadmap">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <span class="kicker l">10 · 14 个月路线图</span>
+      <h2>从手感原型，到全球上线</h2>
+      <p class="sec-sub">11 人团队 · 首年预算约 ¥1200–1900 万（压缩验证版可控制在 ¥600 万内）。</p>
+    </div>
+    <div class="timeline reveal">
+      <div class="timeline-track reveal-group">
+        <div class="tl reveal">
+          <div class="m">M1–M3</div>
+          <h4>预研</h4>
+          <p>光带手感原型（30 帧联机 Demo）、美术风格定稿。</p>
+          <div class="bar-note">确认"带子好玩"</div>
+        </div>
+        <div class="tl reveal">
+          <div class="m">M4–M6</div>
+          <h4>垂直切片</h4>
+          <p>1 颗星球 3 关 + 密室 1 间 + 家园雏形，可 2 人联机。</p>
+          <div class="bar-note">验证核心循环</div>
+        </div>
+        <div class="tl reveal">
+          <div class="m">M7–M11</div>
+          <h4>生产</h4>
+          <p>6 星球 48 关、20 迷你游戏、家园 300 家具、UGC 编辑器。</p>
+          <div class="bar-note">内容铺量</div>
+        </div>
+        <div class="tl reveal">
+          <div class="m">M12</div>
+          <h4>封测</h4>
+          <p>50 对情侣 4 周封闭测试 + 稳定性压测，重点看"吵架率"。</p>
+          <div class="bar-note">稳定性验收</div>
+        </div>
+        <div class="tl reveal">
+          <div class="m">M13</div>
+          <h4>软启动</h4>
+          <p>东南亚 / 港澳台小规模上线，验证留存与商业模型。</p>
+          <div class="bar-note">小步验证</div>
+        </div>
+        <div class="tl reveal">
+          <div class="m">M14</div>
+          <h4>全球</h4>
+          <p>正式上线 + 首赛季「流星季」。11–14 人团队。</p>
+          <div class="bar-note">首赛季开跑</div>
+        </div>
+      </div>
+    </div>
+    <p class="timeline-hint reveal">← 横向滑动查看完整时间轴 →</p>
+  </div>
+</section>
+
+<!-- ================= 11 KPI ================= -->
+<section id="kpi">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <span class="kicker">11 · KPI 目标（首年）</span>
+      <h2>留存靠"两个人"，质量靠"不卡"</h2>
+      <p class="sec-sub">双人绑定是留存的分水岭；提示使用率越低，说明谜题越好。</p>
+    </div>
+    <div class="kpi">
+      <div class="reveal">
+        <div class="kpi-block">
+          <h3>留存漏斗</h3>
+          <div class="kpi-row reveal"><span class="k">D1 留存</span><div class="bar"><i class="bar-fill" style="--w:45%"></i></div><span class="v">45%</span></div>
+          <div class="kpi-row reveal"><span class="k">D7 留存</span><div class="bar"><i class="bar-fill" style="--w:25%"></i></div><span class="v">25%</span></div>
+          <div class="kpi-row reveal"><span class="k">D30 留存</span><div class="bar"><i class="bar-fill" style="--w:12%"></i></div><span class="v">12%</span></div>
+          <div class="kpi-row reveal"><span class="k">双人绑定率</span><div class="bar"><i class="bar-fill" style="--w:70%"></i></div><span class="v">70%</span></div>
+        </div>
+      </div>
+      <div class="reveal">
+        <div class="kpi-block alt">
+          <h3>质量与健康度</h3>
+          <div class="kpi-row reveal"><span class="k">提示使用率</span><div class="bar"><i class="bar-fill" style="--w:40%"></i></div><span class="v">&lt;40%</span></div>
+          <div class="kpi-row reveal"><span class="k">关卡卡关率</span><div class="bar"><i class="bar-fill" style="--w:5%"></i></div><span class="v">&lt;5%</span></div>
+          <div class="kpi-row reveal"><span class="k">付费率</span><div class="bar"><i class="bar-fill" style="--w:5%"></i></div><span class="v">4–6%</span></div>
+          <div class="kpi-row reveal"><span class="k">同步成功率</span><div class="bar"><i class="bar-fill" style="--w:85%"></i></div><span class="v">—</span></div>
+        </div>
+      </div>
+    </div>
+    <div class="kpi-extra reveal-group">
+      <div class="kpi-tile reveal"><b>22 分钟</b><span>平均单次会话</span></div>
+      <div class="kpi-tile reveal"><b>4.2 次</b><span>周会话次数</span></div>
+      <div class="kpi-tile reveal"><b>&gt; 55</b><span>推荐率 NPS</span></div>
+    </div>
+    <p class="note reveal">双人绑定用户 D1 留存 55%+；卡关率口径为"单关停留 &gt; 15 分钟"。所有指标以"两个人"为单位统计，不拆分单人生效。</p>
+  </div>
+</section>
+
+<!-- ================= 页脚 ================= -->
+<footer class="footer">
+  <div class="wrap">
+    <div class="balls"><i></i><i></i></div>
+    <p class="quote">不是打败孤独，而是<span>有人陪着，孤独就变小了</span>。</p>
+    <div class="line"></div>
+    <p style="margin-top:18px;">《球球星球》双人协作 × 派对联机 × 治愈养成 ｜ 两颗球球，一根光带，一起滚过一颗会呼吸的小星球。</p>
+    <p class="ver">版本 <b>v1.0</b> ｜ 游戏设计蓝图 · 单文件离线可视化 ｜ 内容依据 GDD 原文整理</p>
+  </div>
+</footer>
+
+<script>
+(function(){
+  "use strict";
+  var reduce = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  /* ---------- 滚动淡入 ---------- */
+  var reveals = document.querySelectorAll(".reveal");
+  if (!("IntersectionObserver" in window) || reduce) {
+    for (var i = 0; i < reveals.length; i++) reveals[i].classList.add("in");
+  } else {
+    /* 组内错峰：同一 reveal-group 里的元素依次出现 */
+    var groups = document.querySelectorAll(".reveal-group");
+    for (var g = 0; g < groups.length; g++) {
+      var kids = groups[g].querySelectorAll(".reveal");
+      for (var k = 0; k < kids.length; k++) {
+        kids[k].style.transitionDelay = Math.min(k * 70, 360) + "ms";
+      }
+    }
+
+    var io = new IntersectionObserver(function(entries){
+      entries.forEach(function(entry){
+        if (entry.isIntersecting) {
+          var el = entry.target;
+          el.classList.add("in");
+          io.unobserve(el);
+          /* 动画结束后清掉延迟，避免影响 hover 手感 */
+          window.setTimeout(function(){ el.style.transitionDelay = ""; }, 900);
+        }
+      });
+    }, { threshold: 0.08, rootMargin: "0px 0px -40px 0px" });
+
+    for (var r = 0; r < reveals.length; r++) io.observe(reveals[r]);
+  }
+
+  /* ---------- 导航高亮 ---------- */
+  var links = document.querySelectorAll("#navLinks a");
+  var sections = [];
+  for (var s = 0; s < links.length; s++) {
+    var href = links[s].getAttribute("href");
+    if (!href || href.charAt(0) !== "#") continue;
+    var target = document.getElementById(href.slice(1));
+    if (target) sections.push({ el: target, a: links[s] });
+  }
+  function setActive(id){
+    for (var j = 0; j < links.length; j++) {
+      links[j].classList.toggle("active", links[j].getAttribute("href") === "#" + id);
+    }
+  }
+  if ("IntersectionObserver" in window && sections.length) {
+    var spy = new IntersectionObserver(function(entries){
+      entries.forEach(function(entry){
+        if (entry.isIntersecting) setActive(entry.target.id);
+      });
+    }, { rootMargin: "-42% 0px -52% 0px", threshold: 0 });
+    sections.forEach(function(item){ spy.observe(item.el); });
+  }
+
+  /* 点击导航后让当前项保持高亮（兜底：滚动到页面底部时高亮 KPI） */
+  window.addEventListener("scroll", function(){
+    if (window.innerHeight + window.scrollY >= document.body.offsetHeight - 80) {
+      setActive("kpi");
+    }
+  }, { passive: true });
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,10 @@
+node_modules/
+dist/
+.capacitor/
+.gradle/
+.local/
+*.keystore
+*.jks
+.env
+.env.*
+!.env.example
