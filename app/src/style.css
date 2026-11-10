@@ -1,0 +1,38 @@
+:root {
+  font-family: "Nunito", "Microsoft YaHei", sans-serif;
+  color: #f9f4ff;
+  background: #101934;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+}
+
+* { box-sizing: border-box; }
+
+html, body { margin: 0; min-width: 320px; min-height: 100%; }
+body { min-height: 100vh; overflow: hidden; }
+button { font: inherit; }
+
+.game-shell { position: relative; width: 100vw; height: 100vh; min-height: 520px; overflow: hidden; background: #101934; }
+#game { display: block; width: 100%; height: 100%; touch-action: none; }
+
+.hud { position: absolute; inset: max(20px, env(safe-area-inset-top)) 20px auto; display: flex; align-items: flex-start; gap: 16px; pointer-events: none; }
+.brand { display: grid; gap: 2px; text-shadow: 0 3px 14px rgba(9, 12, 35, .45); }
+.eyebrow { color: #b8d5ff; font-size: 12px; letter-spacing: .18em; }
+h1 { margin: 0; font-family: "Bricolage Grotesque", "Microsoft YaHei", sans-serif; font-size: clamp(24px, 4vw, 42px); letter-spacing: .04em; }
+.objective { margin-top: 8px; padding: 9px 14px; border: 1px solid rgba(255,255,255,.2); border-radius: 999px; color: #fff6d9; background: rgba(22, 30, 66, .56); backdrop-filter: blur(8px); }
+.hud button { margin-left: auto; pointer-events: auto; border: 1px solid rgba(255,255,255,.2); border-radius: 999px; padding: 9px 14px; color: #fff; background: rgba(22, 30, 66, .56); cursor: pointer; }
+.hud button:hover, .complete button:hover { background: rgba(48, 63, 119, .8); }
+
+.hint { position: absolute; left: 20px; bottom: max(20px, env(safe-area-inset-bottom)); display: grid; gap: 4px; max-width: min(470px, calc(100vw - 40px)); padding: 12px 15px; border: 1px solid rgba(255,255,255,.16); border-radius: 16px; color: rgba(248, 244, 255, .8); background: rgba(12, 18, 45, .54); backdrop-filter: blur(8px); font-size: 13px; }
+.hint strong { color: #fff5c4; }
+
+.complete { position: absolute; inset: 50% auto auto 50%; display: grid; gap: 14px; justify-items: center; transform: translate(-50%, -50%); padding: 28px 34px; border: 1px solid rgba(255,255,255,.28); border-radius: 24px; background: rgba(25, 35, 77, .84); box-shadow: 0 24px 80px rgba(0,0,0,.35); backdrop-filter: blur(14px); }
+.complete[hidden] { display: none; }
+.complete p { margin: 0; color: #fff5c4; font-size: clamp(24px, 5vw, 38px); font-weight: 800; }
+.complete button { border: 0; border-radius: 999px; padding: 10px 18px; color: #182143; background: #ffe9a7; cursor: pointer; }
+
+@media (max-width: 620px) {
+  .hud { inset-inline: 14px; }
+  .objective { font-size: 12px; }
+  .hint { left: 14px; bottom: max(14px, env(safe-area-inset-bottom)); font-size: 12px; }
+}
